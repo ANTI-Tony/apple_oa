@@ -9,6 +9,9 @@ MACOSX_DEPLOYMENT_TARGET = 14.0
 FEATURE_VISION_ASSIST = YES
 FEATURE_SAMPLE_CONTENT = YES
 FEATURE_APP_INTENTS = YES
+// Opt-in language-model features. NO removes them from the build entirely,
+// network entitlement aside. Off by default at runtime even when YES here.
+FEATURE_WRITING_ASSISTANCE = YES
 
 // Default width of the rendered card in points. Email clients wrap at ~600.
 EXPORT_DEFAULT_WIDTH = 600

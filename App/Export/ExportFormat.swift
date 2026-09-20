@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 /// File formats the app can write.
 enum ExportFormat: String, CaseIterable, Identifiable {
     case png
+    case pdf
     case html
     case markdown
     case plainText
@@ -16,6 +17,7 @@ enum ExportFormat: String, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .png: "PNG Image"
+        case .pdf: "PDF Document (Tagged)"
         case .html: "HTML Page"
         case .markdown: "Markdown"
         case .plainText: "Plain Text"
@@ -26,6 +28,7 @@ enum ExportFormat: String, CaseIterable, Identifiable {
     var fileExtension: String {
         switch self {
         case .png: "png"
+        case .pdf: "pdf"
         case .html: "html"
         case .markdown: "md"
         case .plainText: "txt"
@@ -36,6 +39,7 @@ enum ExportFormat: String, CaseIterable, Identifiable {
     var contentType: UTType {
         switch self {
         case .png: .png
+        case .pdf: .pdf
         case .html: .html
         case .markdown: UTType(filenameExtension: "md") ?? .plainText
         case .plainText: .plainText

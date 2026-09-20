@@ -1,3 +1,4 @@
+import AppKit
 import ReportCore
 import SwiftUI
 import UniformTypeIdentifiers
@@ -20,6 +21,10 @@ struct CardCommands: Commands {
             }
             .keyboardShortcut("n", modifiers: .command)
 
+            Button("New Card from Notes…") { workspace.isDraftingFromNotes = true }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .disabled(!AppConfiguration.isEnabled(.writingAssistance))
+
             Menu("New from Template") {
                 ForEach(CardTemplate.builtIn) { template in
                     Button(template.name) {
@@ -32,6 +37,15 @@ struct CardCommands: Commands {
 
             Button("Import Cards…") { importCards() }
                 .keyboardShortcut("o", modifiers: .command)
+        }
+
+        CommandGroup(replacing: .printItem) {
+            Button("Print…") {
+                guard let card = store.selectedCard else { return }
+                CardPrinter.print(card, width: workspace.cardWidth.points, includeFooter: preferences.includeFooter)
+            }
+            .keyboardShortcut("p", modifiers: .command)
+            .disabled(store.selectedCard == nil)
         }
 
         CommandGroup(after: .pasteboard) {
@@ -87,6 +101,20 @@ struct CardCommands: Commands {
 
                 Button("Check Accessibility") { workspace.reveal(.accessibility) }
                     .keyboardShortcut("k", modifiers: [.command, .shift])
+                Button(workspace.speech.isSpeaking ? "Stop Speaking" : "Hear This Card") {
+                    guard let card = store.selectedCard else { return }
+                    workspace.toggleSpeech(for: card, includeFooter: preferences.includeFooter)
+                }
+                .keyboardShortcut("l", modifiers: [.command, .option])
+                Menu("Simulate Colour Vision") {
+                    Picker("Simulate Colour Vision", selection: Bindable(workspace).visionSimulation) {
+                        ForEach(VisionSimulation.allCases) { simulation in
+                            Text(simulation.label).tag(simulation)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
 
                 Divider()
 
@@ -126,16 +154,16 @@ struct CardCommands: Commands {
     private func moveSelectedBlock(by offset: Int) {
         guard var card = store.selectedCard, let blockID = workspace.selectedBlockID else { return }
         card.moveBlock(withID: blockID, by: offset)
-        store.update(card)
+        store.update(card, undoManager: NSApp.keyWindow?.undoManager)
         workspace.scrollTarget = blockID
     }
 
     private func deleteSelectedBlock() {
         guard var card = store.selectedCard, let blockID = workspace.selectedBlockID else { return }
         card.removeBlock(withID: blockID)
-        store.update(card)
+        store.update(card, undoManager: NSApp.keyWindow?.undoManager)
         workspace.selectedBlockID = nil
-        workspace.announce("Block deleted")
+        workspace.announce("Block deleted. Press ⌘Z to undo.")
     }
 
     private func importCards() {

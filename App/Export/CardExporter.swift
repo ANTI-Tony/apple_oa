@@ -21,6 +21,13 @@ enum CardExporter {
         return NSBitmapImageRep(cgImage: cgImage).representation(using: .png, properties: [:])
     }
 
+    /// The rendered card as a bitmap, for the colour-vision simulator.
+    static func cgImage(for card: SnippetCard, width: CGFloat = 600, scale: CGFloat = 2, includeFooter: Bool = true) -> CGImage? {
+        let renderer = ImageRenderer(content: CardView(card: card, width: width, includeFooter: includeFooter))
+        renderer.scale = scale
+        return renderer.cgImage
+    }
+
     static func data(
         for card: SnippetCard,
         format: ExportFormat,
@@ -34,6 +41,11 @@ enum CardExporter {
                 scale: CGFloat(preferences.scale),
                 includeFooter: preferences.includeFooter
             ) else {
+                throw ExportError.renderFailed
+            }
+            return data
+        case .pdf:
+            guard let data = PDFCardComposer.data(for: card, width: preferences.width, includeFooter: preferences.includeFooter) else {
                 throw ExportError.renderFailed
             }
             return data

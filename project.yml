@@ -67,11 +67,15 @@ targets:
           VisionAssist: $(FEATURE_VISION_ASSIST)
           SampleContent: $(FEATURE_SAMPLE_CONTENT)
           AppIntents: $(FEATURE_APP_INTENTS)
+          WritingAssistance: $(FEATURE_WRITING_ASSISTANCE)
     entitlements:
       path: App/ReportingBuilder.entitlements
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.files.user-selected.read-write: true
+        # Outgoing connections, used only by opt-in writing assistance (ADR 0011).
+        com.apple.security.network.client: true
+        com.apple.security.print: true
     settings:
       base:
         PRODUCT_NAME: ReportingBuilder

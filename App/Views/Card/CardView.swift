@@ -15,6 +15,11 @@ struct CardView: View {
         card.theme
     }
 
+    /// The root sets the type ramp for its subtree, so it computes its own.
+    private var typography: CardTypography {
+        CardTypography(scale: card.textSize.scale)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -23,13 +28,14 @@ struct CardView: View {
             }
             if includeFooter {
                 Text(CardDateFormatting.footerText(for: card))
-                    .font(CardStyle.footer)
+                    .font(typography.footer)
                     .foregroundStyle(theme.secondaryText.color)
                     .padding(.top, 24)
             }
         }
         .frame(width: width - CardStyle.padding * 2, alignment: .leading)
         .modifier(CardSurface(theme: theme))
+        .cardTypography(for: card)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Card: \(card.title.isEmpty ? "Untitled" : card.title), \(card.status.label)")
     }
@@ -38,12 +44,12 @@ struct CardView: View {
         VStack(alignment: .leading, spacing: 0) {
             if !card.subtitle.isEmpty {
                 Text(card.subtitle)
-                    .font(CardStyle.eyebrow)
+                    .font(typography.eyebrow)
                     .foregroundStyle(theme.secondaryText.color)
                     .padding(.bottom, 6)
             }
             Text(card.title.isEmpty ? "Untitled" : card.title)
-                .font(CardStyle.title)
+                .font(typography.title)
                 .tracking(-0.3)
                 .foregroundStyle(theme.text.color)
                 .fixedSize(horizontal: false, vertical: true)
@@ -73,16 +79,53 @@ struct CardView: View {
 // MARK: - Blocks
 
 struct CardSectionHeading: View {
+    @Environment(\.cardTypography) private var typography
     let text: String
     let theme: CardTheme
 
     var body: some View {
         if !text.isEmpty {
             Text(text)
-                .font(CardStyle.heading)
+                .font(typography.heading)
                 .foregroundStyle(theme.text.color)
                 .accessibilityAddTraits(.isHeader)
         }
+    }
+}
+
+struct CardParagraph: View {
+    @Environment(\.cardTypography) private var typography
+    let text: String
+    let theme: CardTheme
+
+    var body: some View {
+        Text(text)
+            .font(typography.body)
+            .lineSpacing(CardStyle.bodyLineSpacing)
+            .foregroundStyle(theme.text.color)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+struct CardBulletList: View {
+    @Environment(\.cardTypography) private var typography
+    let items: [String]
+    let theme: CardTheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("•").accessibilityHidden(true)
+                    Text(item).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .font(typography.body)
+        .lineSpacing(CardStyle.bodyLineSpacing)
+        .foregroundStyle(theme.text.color)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("List, \(items.count) items")
     }
 }
 
@@ -95,25 +138,10 @@ struct TextBlockView: View {
             CardSectionHeading(text: block.heading, theme: theme)
             ForEach(Array(block.fragments.enumerated()), id: \.offset) { _, fragment in
                 switch fragment {
-                case let .paragraph(text):
-                    Text(text)
-                        .fixedSize(horizontal: false, vertical: true)
-                case let .bullets(items):
-                    VStack(alignment: .leading, spacing: 5) {
-                        ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text("•").accessibilityHidden(true)
-                                Text(item).fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
-                    .accessibilityElement(children: .contain)
-                    .accessibilityLabel("List, \(items.count) items")
+                case let .paragraph(text): CardParagraph(text: text, theme: theme)
+                case let .bullets(items): CardBulletList(items: items, theme: theme)
                 }
             }
-            .font(CardStyle.body)
-            .lineSpacing(CardStyle.bodyLineSpacing)
-            .foregroundStyle(theme.text.color)
         }
     }
 }
@@ -122,24 +150,34 @@ struct MetricsBlockView: View {
     let block: MetricsBlock
     let theme: CardTheme
 
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            CardSectionHeading(text: block.heading, theme: theme)
+            MetricsContent(block: block, theme: theme)
+        }
+    }
+}
+
+/// The metrics themselves, without the heading: a group of tiles or a table.
+struct MetricsContent: View {
+    let block: MetricsBlock
+    let theme: CardTheme
+
     private var hasChange: Bool {
         block.metrics.contains { $0.change != nil }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            CardSectionHeading(text: block.heading, theme: theme)
-            switch block.layout {
-            case .tiles:
-                MetricsGroup(count: block.metrics.count, theme: theme) { index in
-                    MetricTile(metric: block.metrics[index], theme: theme)
-                }
-            case .table:
-                VStack(spacing: 0) {
-                    ForEach(block.metrics) { metric in
-                        MetricTableRow(metric: metric, theme: theme, showsChange: hasChange)
-                        Rectangle().fill(theme.border.color).frame(height: 1)
-                    }
+        switch block.layout {
+        case .tiles:
+            MetricsGroup(count: block.metrics.count, theme: theme) { index in
+                MetricTile(metric: block.metrics[index], theme: theme)
+            }
+        case .table:
+            VStack(spacing: 0) {
+                ForEach(block.metrics) { metric in
+                    MetricTableRow(metric: metric, theme: theme, showsChange: hasChange)
+                    Rectangle().fill(theme.border.color).frame(height: 1)
                 }
             }
         }
@@ -147,24 +185,25 @@ struct MetricsBlockView: View {
 }
 
 struct MetricTile: View {
+    @Environment(\.cardTypography) private var typography
     let metric: Metric
     let theme: CardTheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(metric.label)
-                .font(CardStyle.metricLabel)
+                .font(typography.metricLabel)
                 .foregroundStyle(theme.secondaryText.color)
                 .lineLimit(2)
             Text(metric.value)
-                .font(CardStyle.metricValue)
+                .font(typography.metricValue)
                 .foregroundStyle(theme.text.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             HStack(spacing: 6) {
                 if let change = metric.change {
                     Text(change.display)
-                        .font(CardStyle.metricChange)
+                        .font(typography.metricChange)
                         .foregroundStyle(theme.changeColor(for: change.sentiment).color)
                 }
                 Spacer(minLength: 0)
@@ -179,10 +218,12 @@ struct MetricTile: View {
         .padding(.vertical, 14)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(metric.spokenSummary)
+        .trendAudioGraph(for: metric)
     }
 }
 
 struct MetricTableRow: View {
+    @Environment(\.cardTypography) private var typography
     let metric: Metric
     let theme: CardTheme
     let showsChange: Bool
@@ -190,13 +231,13 @@ struct MetricTableRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(metric.label)
-                .font(CardStyle.body)
+                .font(typography.body)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(metric.value)
-                .font(CardStyle.tableValue)
+                .font(typography.tableValue)
             if showsChange {
                 Text(metric.change?.display ?? "")
-                    .font(CardStyle.tableChange)
+                    .font(typography.tableChange)
                     .foregroundStyle(metric.change.map { theme.changeColor(for: $0.sentiment).color } ?? theme.text.color)
                     .frame(width: 84, alignment: .trailing)
             }
@@ -209,26 +250,37 @@ struct MetricTableRow: View {
 }
 
 struct ImageBlockView: View {
+    @Environment(\.cardTypography) private var typography
     let block: ImageBlock
     let theme: CardTheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let image = ImageCache.shared.image(for: block) {
-                let shape = RoundedRectangle(cornerRadius: CardStyle.imageCornerRadius, style: .continuous)
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(shape)
-                    .overlay(shape.strokeBorder(theme.border.color, lineWidth: 1))
-                    .accessibilityLabel(block.altText)
-                    .accessibilityHidden(block.isDecorative)
-            }
+            CardImage(block: block, theme: theme)
             if !block.caption.isEmpty {
                 Text(block.caption)
-                    .font(CardStyle.caption)
+                    .font(typography.caption)
                     .foregroundStyle(theme.secondaryText.color)
             }
+        }
+    }
+}
+
+/// The picture alone, with its description for VoiceOver.
+struct CardImage: View {
+    let block: ImageBlock
+    let theme: CardTheme
+
+    var body: some View {
+        if let image = ImageCache.shared.image(for: block) {
+            let shape = RoundedRectangle(cornerRadius: CardStyle.imageCornerRadius, style: .continuous)
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+                .clipShape(shape)
+                .overlay(shape.strokeBorder(theme.border.color, lineWidth: 1))
+                .accessibilityLabel(block.altText)
+                .accessibilityHidden(block.isDecorative)
         }
     }
 }

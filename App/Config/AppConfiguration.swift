@@ -13,12 +13,15 @@ enum AppConfiguration {
         case sampleContent = "SampleContent"
         /// Shortcuts integration.
         case appIntents = "AppIntents"
+        /// Opt-in language-model features (draft from notes, refine text).
+        case writingAssistance = "WritingAssistance"
 
         var label: String {
             switch self {
             case .visionAssist: "Vision assist"
             case .sampleContent: "Sample content"
             case .appIntents: "Shortcuts"
+            case .writingAssistance: "Writing assistance"
             }
         }
     }

@@ -12,19 +12,24 @@ struct CanvasView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var isDropTargeted = false
+    @State private var simulatedImage: CGImage?
 
     var body: some View {
         @Bindable var workspace = workspace
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 20) {
-                    EditableCardView(card: $card, maxWidth: workspace.cardWidth.points, includeFooter: preferences.includeFooter)
-                        .draggable(CardTransfer(card: card, width: workspace.cardWidth.points)) {
-                            Label("Card Image", systemImage: "photo")
-                                .padding(8)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
-                        }
-                    InsertBar(actions: insertActions)
+                    if workspace.visionSimulation == .none {
+                        EditableCardView(card: $card, maxWidth: workspace.cardWidth.points, includeFooter: preferences.includeFooter)
+                            .draggable(CardTransfer(card: card, width: workspace.cardWidth.points)) {
+                                Label("Card Image", systemImage: "photo")
+                                    .padding(8)
+                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                            }
+                        InsertBar(actions: insertActions)
+                    } else {
+                        simulationView
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 32)
@@ -71,6 +76,19 @@ struct CanvasView: View {
         .sheet(item: $workspace.pendingPaste) { payload in
             PasteReviewSheet(payload: payload) { blocks in insert(blocks) }
         }
+        // File ▸ Import from iPhone or iPad (Continuity Camera).
+        .importsItemProviders([.image]) { providers in
+            Task {
+                let blocks = await DropIngestor.blocks(from: providers)
+                if !blocks.isEmpty {
+                    insert(blocks)
+                }
+            }
+            return true
+        }
+        .task(id: SimulationKey(card: card, simulation: workspace.visionSimulation, width: workspace.cardWidth)) {
+            renderSimulation()
+        }
         .onChange(of: workspace.insertRequest) { _, request in
             guard let request else { return }
             perform(request)
@@ -110,9 +128,69 @@ struct CanvasView: View {
         }
     }
 
+    // MARK: Colour vision
+
+    private struct SimulationKey: Equatable {
+        let card: SnippetCard
+        let simulation: VisionSimulation
+        let width: CardWidth
+    }
+
+    private func renderSimulation() {
+        guard workspace.visionSimulation != .none,
+              let image = CardExporter.cgImage(for: card, width: workspace.cardWidth.points, includeFooter: preferences.includeFooter)
+        else {
+            simulatedImage = nil
+            return
+        }
+        simulatedImage = VisionSimulator.simulate(image, as: workspace.visionSimulation)
+    }
+
+    private var simulationView: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: "eye")
+                    .accessibilityHidden(true)
+                // The two lines read as one sentence; Done stays a button of its own,
+                // so VoiceOver and Full Keyboard Access can reach it.
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Simulating \(workspace.visionSimulation.label)")
+                        .font(.callout.weight(.semibold))
+                    Text("\(workspace.visionSimulation.detail). Editing is paused.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+                Spacer(minLength: 12)
+                Button("Done") { workspace.visionSimulation = .none }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityHint("Returns to the editable card")
+                    .accessibilityIdentifier("canvas.simulationDone")
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .frame(maxWidth: workspace.cardWidth.points)
+
+            if let simulatedImage {
+                Image(decorative: simulatedImage, scale: 2)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: workspace.cardWidth.points)
+                    .shadow(color: .black.opacity(0.14), radius: 18, y: 6)
+                    .accessibilityLabel("The card as seen with \(workspace.visionSimulation.label)")
+            } else {
+                ProgressView()
+            }
+        }
+    }
+
+    // MARK: Inserting
+
     private func insert(_ blocks: [Block]) {
         card.blocks.append(contentsOf: blocks)
         card.touch()
+        countWordsInImages(blocks)
         if let last = blocks.last {
             workspace.selectedBlockID = last.id
             workspace.scrollTarget = last.id
@@ -127,6 +205,23 @@ struct CanvasView: View {
         if needsDescription {
             workspace.reveal(.block)
             workspace.announce("Image added. Describe it in the Format inspector.")
+        }
+    }
+
+    /// Runs on-device text recognition on new images and stores the word
+    /// count, which lets the linter flag images that are mostly text.
+    private func countWordsInImages(_ blocks: [Block]) {
+        guard AppConfiguration.isEnabled(.visionAssist) else { return }
+        for case let .image(image) in blocks where image.recognizedWordCount == nil {
+            let data = image.imageData
+            let blockID = image.id
+            Task {
+                guard let lines = try? await VisionServices.recognizeText(in: data) else { return }
+                let words = lines.reduce(0) { $0 + $1.split(whereSeparator: { $0.isWhitespace }).count }
+                guard let index = card.index(ofBlock: blockID), case var .image(current) = card.blocks[index] else { return }
+                current.recognizedWordCount = words
+                card.blocks[index] = .image(current)
+            }
         }
     }
 

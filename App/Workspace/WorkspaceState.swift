@@ -52,6 +52,13 @@ final class WorkspaceState {
     var inspectorTab: InspectorTab = LaunchOverrides.inspectorTab ?? .card
     var cardWidth: CardWidth = .email
 
+    /// Approximates a colour-vision deficiency on the canvas. Editing pauses
+    /// while it is on, because what is shown is a rendered image.
+    var visionSimulation: VisionSimulation = LaunchOverrides.visionSimulation ?? .none
+    /// Reads the card aloud as a screen reader would.
+    let speech = SpeechPlayer()
+    var isDraftingFromNotes = LaunchOverrides.opensDraftDemo
+
     /// One-shot requests from the toolbar and menus to the canvas.
     var insertRequest: InsertRequest?
     var scrollTarget: UUID?
@@ -60,6 +67,15 @@ final class WorkspaceState {
 
     private(set) var notice: Notice?
     private var noticeTask: Task<Void, Never>?
+
+    /// Starts or stops reading the card aloud.
+    func toggleSpeech(for card: SnippetCard, includeFooter: Bool, volume: Float = 1) {
+        if speech.isSpeaking {
+            speech.stop()
+        } else {
+            speech.speak(SpokenRenderer(includeFooter: includeFooter).segments(for: card), volume: volume)
+        }
+    }
 
     /// Opens the inspector on a tab, e.g. from "Add Description" on an image.
     func reveal(_ tab: InspectorTab) {

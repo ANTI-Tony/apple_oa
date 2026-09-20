@@ -30,6 +30,8 @@
 		<string>$(FEATURE_SAMPLE_CONTENT)</string>
 		<key>VisionAssist</key>
 		<string>$(FEATURE_VISION_ASSIST)</string>
+		<key>WritingAssistance</key>
+		<string>$(FEATURE_WRITING_ASSISTANCE)</string>
 	</dict>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>

@@ -7,11 +7,15 @@ final class ReportingBuilderUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// - Parameter overrides: `LaunchOverrides` keys without the dash, e.g. `["demoState": "listening"]`.
     @MainActor
-    private func launchApp(windowSize: String? = nil) -> XCUIApplication {
+    private func launchApp(windowSize: String? = nil, overrides: [String: String] = [:]) -> XCUIApplication {
         let app = XCUIApplication()
         // Key/value pairs first, the valueless flag last (see LaunchOverrides).
         app.launchArguments = windowSize.map { ["-windowSize", $0] } ?? []
+        for (key, value) in overrides.sorted(by: { $0.key < $1.key }) {
+            app.launchArguments += ["-\(key)", value]
+        }
         app.launchArguments.append("-uiTesting")
         app.launch()
         return app
@@ -101,6 +105,68 @@ final class ReportingBuilderUITests: XCTestCase {
         XCTAssertTrue(types.contains(.html), "types: \(types)")
         XCTAssertTrue(types.contains(.rtfd), "types: \(types)")
         XCTAssertTrue(types.contains(.string), "types: \(types)")
+    }
+
+    // MARK: Accessibility features
+
+    @MainActor
+    func testUndescribedImageIsFlaggedAndLeadsToItsDescriptionField() {
+        let app = launchApp(windowSize: "1400x860", overrides: ["demoState": "missingDescription"])
+        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
+        let status = element("toolbar.accessibility", in: app)
+        XCTAssertTrue(status.waitForExistence(timeout: 5))
+        XCTAssertTrue(status.label.contains("accessibility error"), "toolbar status was: \(status.label)")
+        let prompt = element("canvas.addDescription", in: app)
+        XCTAssertTrue(prompt.waitForExistence(timeout: 5))
+        prompt.click()
+        XCTAssertTrue(element("inspector.imageDescription", in: app).waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testHearThisCardShowsWhatAScreenReaderWouldSay() {
+        // `listening` starts the narration muted, so the test machine stays quiet.
+        let app = launchApp(windowSize: "1400x860", overrides: ["demoState": "listening", "inspectorTab": "accessibility"])
+        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
+        let listen = element("inspector.listen", in: app)
+        XCTAssertTrue(listen.waitForExistence(timeout: 5))
+        let speaking = NSPredicate(format: "label == %@", "Stop")
+        expectation(for: speaking, evaluatedWith: listen)
+        waitForExpectations(timeout: 10)
+        // The transcript opens by itself, and the gap is spelled out.
+        XCTAssertTrue(app.staticTexts["Image. No description."].waitForExistence(timeout: 5))
+        listen.click()
+        let stopped = NSPredicate(format: "label == %@", "Hear This Card")
+        expectation(for: stopped, evaluatedWith: listen)
+        waitForExpectations(timeout: 5)
+    }
+
+    @MainActor
+    func testColourVisionSimulationPausesEditingUntilDone() {
+        let app = launchApp(overrides: ["visionSimulation": "deuteranopia"])
+        let done = element("canvas.simulationDone", in: app)
+        XCTAssertTrue(done.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.textFields["editor.title"].exists)
+        done.click()
+        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 5))
+    }
+
+    // MARK: Writing assistance
+
+    @MainActor
+    func testNewCardFromNotesCreatesTheDraftedCard() {
+        // A canned model: no key, no network, the same parsing and linting as a real reply.
+        let app = launchApp(overrides: ["demoDraft": "YES", "stubAssistant": "YES"])
+        let create = element("draft.create", in: app)
+        XCTAssertTrue(create.waitForExistence(timeout: 10))
+        let ready = NSPredicate(format: "isEnabled == true")
+        expectation(for: ready, evaluatedWith: create)
+        waitForExpectations(timeout: 10)
+        create.click()
+        let title = app.textFields["editor.title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        let drafted = NSPredicate(format: "value == %@", "Atlas weekly status")
+        expectation(for: drafted, evaluatedWith: title)
+        waitForExpectations(timeout: 5)
     }
 
     @MainActor

@@ -1,12 +1,8 @@
 import ReportCore
 import SwiftUI
 
-/// Type and spacing for the card, shared by the static renderer (`CardView`,
-/// used for PNG export) and the editable canvas so the two cannot drift.
-///
-/// The look is typographic: hierarchy comes from size and weight, not boxes,
-/// capitals or colour. Sizes are fixed points because the card is an artifact
-/// with a known width; the app chrome around it uses semantic fonts.
+/// Spacing and shape for the card, shared by the static renderer (`CardView`,
+/// used for PNG and PDF export) and the editable canvas so the two cannot drift.
 enum CardStyle {
     static let padding: CGFloat = 28
     static let blockSpacing: CGFloat = 22
@@ -14,57 +10,92 @@ enum CardStyle {
     static let imageCornerRadius: CGFloat = 10
     static let bodyLineSpacing: CGFloat = 3
 
-    static var eyebrow: Font {
-        .system(size: 13)
+    static func metricsPerRow(_ count: Int) -> Int {
+        count == 4 ? 2 : min(3, max(count, 1))
+    }
+}
+
+/// The card's type ramp. The look is typographic: hierarchy comes from size
+/// and weight, not boxes, capitals or colour.
+///
+/// Sizes are points multiplied by the card's text size (`CardTextSize`), which
+/// is how the large-print editions are made. They are fixed rather than
+/// Dynamic Type because the card is an artifact with a known width; the app
+/// chrome around it uses semantic fonts.
+struct CardTypography: Equatable {
+    var scale: CGFloat = 1
+
+    var eyebrow: Font {
+        .system(size: 13 * scale)
     }
 
-    static var title: Font {
-        .system(size: 28, weight: .bold)
+    var title: Font {
+        .system(size: 28 * scale, weight: .bold)
     }
 
-    static var status: Font {
-        .system(size: 13, weight: .medium)
+    var status: Font {
+        .system(size: 13 * scale, weight: .medium)
     }
 
-    static var heading: Font {
-        .system(size: 15, weight: .semibold)
+    var statusGlyph: Font {
+        .system(size: 9 * scale)
     }
 
-    static var body: Font {
-        .system(size: 15)
+    var heading: Font {
+        .system(size: 15 * scale, weight: .semibold)
     }
 
-    static var metricLabel: Font {
-        .system(size: 12)
+    var body: Font {
+        .system(size: 15 * scale)
+    }
+
+    var metricLabel: Font {
+        .system(size: 12 * scale)
     }
 
     /// Rounded numerals, as in Fitness and Health.
-    static var metricValue: Font {
-        .system(size: 28, weight: .semibold, design: .rounded)
+    var metricValue: Font {
+        .system(size: 28 * scale, weight: .semibold, design: .rounded)
     }
 
-    static var metricChange: Font {
-        .system(size: 12, weight: .medium)
+    var metricChange: Font {
+        .system(size: 12 * scale, weight: .medium)
     }
 
-    static var tableValue: Font {
-        .system(size: 15, weight: .semibold).monospacedDigit()
+    var tableValue: Font {
+        .system(size: 15 * scale, weight: .semibold).monospacedDigit()
     }
 
-    static var tableChange: Font {
-        .system(size: 13, weight: .medium).monospacedDigit()
+    var tableChange: Font {
+        .system(size: 13 * scale, weight: .medium).monospacedDigit()
     }
 
-    static var caption: Font {
-        .system(size: 12)
+    var caption: Font {
+        .system(size: 12 * scale)
     }
 
-    static var footer: Font {
-        .system(size: 11)
+    var footer: Font {
+        .system(size: 11 * scale)
     }
 
-    static func metricsPerRow(_ count: Int) -> Int {
-        count == 4 ? 2 : min(3, max(count, 1))
+    /// Height of a single-line text field set in `pointSize`.
+    ///
+    /// AppKit-backed text fields do not reliably grow with a custom font: a
+    /// 28-point value can be laid out in a 17-point-high field and lose its
+    /// lower half. Every single-line field on the canvas states its height.
+    func fieldHeight(_ pointSize: CGFloat) -> CGFloat {
+        (pointSize * scale * 1.25).rounded(.up)
+    }
+}
+
+extension EnvironmentValues {
+    @Entry var cardTypography: CardTypography = .init()
+}
+
+extension View {
+    /// Sets the type ramp for a card from its text size.
+    func cardTypography(for card: SnippetCard) -> some View {
+        environment(\.cardTypography, CardTypography(scale: card.textSize.scale))
     }
 }
 
@@ -74,6 +105,7 @@ enum CardStyle {
 struct CardSurface: ViewModifier {
     let theme: CardTheme
     var isElevated = false
+    @Environment(\.colorSchemeContrast) private var contrast
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
@@ -85,7 +117,12 @@ struct CardSurface: ViewModifier {
                 shape.fill(theme.background.color)
                     .shadow(color: .black.opacity(isElevated ? 0.14 : 0), radius: 18, y: 6)
             }
-            .overlay(shape.strokeBorder(theme.border.color, lineWidth: 1))
+            // Increase Contrast (System Settings → Accessibility → Display) on the
+            // canvas: the paper's edge is drawn in the text colour.
+            .overlay(shape.strokeBorder(
+                isElevated && contrast == .increased ? theme.text.color : theme.border.color,
+                lineWidth: 1
+            ))
             .environment(\.colorScheme, theme.isDark ? .dark : .light)
     }
 }
@@ -95,15 +132,16 @@ struct CardSurface: ViewModifier {
 struct StatusLine: View {
     let status: ReportStatus
     let theme: CardTheme
+    @Environment(\.cardTypography) private var typography
 
     var body: some View {
         HStack(spacing: 6) {
             Text(status.glyph)
-                .font(.system(size: 9))
+                .font(typography.statusGlyph)
                 .foregroundStyle(theme.statusColor(for: status).color)
                 .accessibilityHidden(true)
             Text(status.label)
-                .font(CardStyle.status)
+                .font(typography.status)
                 .foregroundStyle(theme.text.color)
         }
         .accessibilityElement(children: .ignore)

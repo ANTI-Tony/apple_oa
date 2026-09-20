@@ -59,6 +59,36 @@ enum LaunchOverrides {
         inspectorTab(in: ProcessInfo.processInfo.arguments)
     }
 
+    /// `-visionSimulation deuteranopia -uiTesting` opens with a simulation on.
+    static var visionSimulation: VisionSimulation? {
+        value(for: "-visionSimulation", in: ProcessInfo.processInfo.arguments).flatMap(VisionSimulation.init(rawValue:))
+    }
+
+    /// `-stubAssistant YES -uiTesting` replaces the language model with a canned one.
+    static var usesStubAssistant: Bool {
+        value(for: "-stubAssistant", in: ProcessInfo.processInfo.arguments) == "YES"
+    }
+
+    /// `-demoDraft YES -uiTesting` opens New Card from Notes with the sample notes and generates.
+    static var opensDraftDemo: Bool {
+        value(for: "-demoDraft", in: ProcessInfo.processInfo.arguments) == "YES"
+    }
+
+    /// `-demoState missingDescription -uiTesting` seeds an image without a description.
+    /// `largePrint` seeds an Extra Large card; `listening` seeds the undescribed image
+    /// and starts Hear This Card muted.
+    static var demoState: String? {
+        value(for: "-demoState", in: ProcessInfo.processInfo.arguments)
+    }
+
+    static var seedsMissingDescription: Bool {
+        demoState == "missingDescription" || demoState == "listening"
+    }
+
+    static var startsListeningMuted: Bool {
+        demoState == "listening"
+    }
+
     static func value(for key: String, in arguments: [String]) -> String? {
         guard arguments.contains("-uiTesting"),
               let index = arguments.firstIndex(of: key), index + 1 < arguments.count else { return nil }

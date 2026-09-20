@@ -9,6 +9,7 @@ struct MainWindow: View {
     @Environment(WorkspaceState.self) private var workspace
     @Environment(UserPreferences.self) private var preferences
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.undoManager) private var undoManager
 
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var layout: WindowLayout = .wide
@@ -24,7 +25,7 @@ struct MainWindow: View {
                         if let binding = selectedCardBinding {
                             FormatInspector(card: binding)
                         } else {
-                            ContentUnavailableView("No Card Selected", systemImage: "paintbrush")
+                            InspectorPlaceholder(title: "No Card Selected", message: "Choose a card in the sidebar to format it.")
                         }
                     }
                     .inspectorColumnWidth(min: 260, ideal: 290, max: 360)
@@ -34,7 +35,21 @@ struct MainWindow: View {
                 }
         }
         .onAppear { LaunchOverrides.applyWindowSize() }
-        .onChange(of: store.selectedCardID) { _, _ in workspace.selectedBlockID = nil }
+        .task {
+            guard LaunchOverrides.startsListeningMuted else { return }
+            try? await Task.sleep(for: .seconds(3))
+            if let card = store.selectedCard, !workspace.speech.isSpeaking {
+                workspace.toggleSpeech(for: card, includeFooter: preferences.includeFooter, volume: 0)
+            }
+        }
+        .sheet(isPresented: Bindable(workspace).isDraftingFromNotes) {
+            DraftFromNotesSheet()
+        }
+        .onChange(of: store.selectedCardID) { _, _ in
+            workspace.selectedBlockID = nil
+            workspace.speech.stop()
+            workspace.visionSimulation = .none
+        }
         .toolbar { toolbarContent }
         .overlay(alignment: .bottom) {
             if let notice = workspace.notice {
@@ -100,7 +115,7 @@ struct MainWindow: View {
         guard let current = store.selectedCard else { return nil }
         return Binding(
             get: { store.selectedCard ?? current },
-            set: { store.update($0) }
+            set: { store.update($0, undoManager: undoManager) }
         )
     }
 
@@ -114,6 +129,10 @@ struct MainWindow: View {
             Menu {
                 ForEach(CardTemplate.builtIn) { template in
                     Button(template.name) { addCard(from: template) }
+                }
+                if AppConfiguration.isEnabled(.writingAssistance) {
+                    Divider()
+                    Button("From Notes…") { workspace.isDraftingFromNotes = true }
                 }
             } label: {
                 Label("New Card", systemImage: "plus")
@@ -199,9 +218,20 @@ struct AccessibilityStatusButton: View {
 
     var body: some View {
         Button(action: action) {
-            Label(label, systemImage: report.isCompliant ? "checkmark.shield" : "exclamationmark.shield.fill")
+            if report.isCompliant {
+                Label(label, systemImage: "checkmark.shield")
+            } else {
+                // A toolbar draws template symbols in its own colour, so the warning is a
+                // palette symbol. The glyph changes as well: colour is never the only signal.
+                Label {
+                    Text(label)
+                } icon: {
+                    Image(systemName: "exclamationmark.shield.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, .red)
+                }
+            }
         }
-        .foregroundStyle(report.isCompliant ? Color.primary : Color.red)
         .help("\(label). Show the accessibility check.")
         .accessibilityIdentifier("toolbar.accessibility")
     }

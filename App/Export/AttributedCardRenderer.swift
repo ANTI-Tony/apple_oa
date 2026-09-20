@@ -10,25 +10,44 @@ import ReportCore
 @MainActor
 struct AttributedCardRenderer {
     var includeFooter = true
+    /// Type scale of the card being rendered (large print). Set per render.
+    private var scale: CGFloat = 1
+
+    init(includeFooter: Bool = true) {
+        self.includeFooter = includeFooter
+    }
 
     private let palette = CardTheme.light
-    private let bodyFont = NSFont.systemFont(ofSize: 13)
+    private var bodyFont: NSFont {
+        .systemFont(ofSize: 13 * scale)
+    }
 
     func render(_ card: SnippetCard) -> NSAttributedString {
+        var renderer = self
+        renderer.scale = card.textSize.scale
+        return renderer.renderScaled(card)
+    }
+
+    private func renderScaled(_ card: SnippetCard) -> NSAttributedString {
         let output = NSMutableAttributedString()
         if !card.subtitle.isEmpty {
-            output.append(paragraph(card.subtitle, font: .systemFont(ofSize: 12), color: palette.secondaryText.nsColor, spacingAfter: 3))
+            output.append(paragraph(
+                card.subtitle,
+                font: .systemFont(ofSize: 12 * scale),
+                color: palette.secondaryText.nsColor,
+                spacingAfter: 3
+            ))
         }
         output.append(paragraph(
             card.title.isEmpty ? "Untitled" : card.title,
-            font: .boldSystemFont(ofSize: 24),
+            font: .boldSystemFont(ofSize: 24 * scale),
             color: palette.text.nsColor,
             spacingAfter: 6
         ))
         // A coloured indicator followed by the words, as on the card.
         let status = NSMutableAttributedString(attributedString: paragraph(
             "\(card.status.glyph) \(card.status.label)",
-            font: .systemFont(ofSize: 12, weight: .medium),
+            font: .systemFont(ofSize: 12 * scale, weight: .medium),
             color: palette.text.nsColor,
             spacingAfter: 14
         ))
@@ -48,7 +67,7 @@ struct AttributedCardRenderer {
         if includeFooter {
             output.append(paragraph(
                 CardDateFormatting.footerText(for: card),
-                font: .systemFont(ofSize: 10),
+                font: .systemFont(ofSize: 10 * scale),
                 color: palette.secondaryText.nsColor,
                 spacingBefore: 10,
                 spacingAfter: 0
@@ -83,7 +102,7 @@ struct AttributedCardRenderer {
     private func sectionHeading(_ text: String) -> NSAttributedString {
         paragraph(
             text,
-            font: .systemFont(ofSize: 14, weight: .semibold),
+            font: .systemFont(ofSize: 14 * scale, weight: .semibold),
             color: palette.text.nsColor,
             spacingBefore: 10,
             spacingAfter: 4
@@ -142,7 +161,7 @@ struct AttributedCardRenderer {
             }
             let style = NSMutableParagraphStyle()
             style.textBlocks = [textBlock]
-            let font = bold ? NSFont.boldSystemFont(ofSize: 12) : NSFont.systemFont(ofSize: 12)
+            let font = bold ? NSFont.boldSystemFont(ofSize: 12 * scale) : NSFont.systemFont(ofSize: 12 * scale)
             return NSAttributedString(string: text + "\n", attributes: [
                 .font: font, .foregroundColor: color, .paragraphStyle: style,
             ])
@@ -162,7 +181,7 @@ struct AttributedCardRenderer {
                 output.append(cell(metric.change?.display ?? "", row: row, column: 2, bold: true, color: color))
             }
         }
-        output.append(paragraph("", font: .systemFont(ofSize: 4), color: .clear, spacingAfter: 6))
+        output.append(paragraph("", font: .systemFont(ofSize: 4 * scale), color: .clear, spacingAfter: 6))
     }
 
     private func appendImage(_ block: ImageBlock, to output: NSMutableAttributedString) {
@@ -177,7 +196,7 @@ struct AttributedCardRenderer {
         attachmentString.append(NSAttributedString(string: "\n"))
         output.append(attachmentString)
         if !block.caption.isEmpty {
-            output.append(paragraph(block.caption, font: .systemFont(ofSize: 12), color: palette.secondaryText.nsColor))
+            output.append(paragraph(block.caption, font: .systemFont(ofSize: 12 * scale), color: palette.secondaryText.nsColor))
         }
     }
 }

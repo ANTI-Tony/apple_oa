@@ -6,6 +6,7 @@ import SwiftUI
 struct CardListView: View {
     @Environment(CardStore.self) private var store
     @Environment(WorkspaceState.self) private var workspace
+    @Environment(\.undoManager) private var undoManager
     @State private var searchText = ""
 
     private var visibleCards: [SnippetCard] {
@@ -24,7 +25,7 @@ struct CardListView: View {
                     .tag(card.id)
                     .contextMenu {
                         Button("Duplicate") { store.duplicate(id: card.id) }
-                        Button("Delete", role: .destructive) { store.delete(id: card.id) }
+                        Button("Delete", role: .destructive) { store.delete(id: card.id, undoManager: undoManager) }
                     }
             }
         }
@@ -33,8 +34,8 @@ struct CardListView: View {
         .navigationTitle("Cards")
         .onDeleteCommand {
             if let id = store.selectedCardID {
-                store.delete(id: id)
-                workspace.announce("Card deleted")
+                store.delete(id: id, undoManager: undoManager)
+                workspace.announce("Card deleted. Press ⌘Z to undo.")
             }
         }
         .accessibilityIdentifier("sidebar.cards")
@@ -48,6 +49,7 @@ struct CardListView: View {
 
 private struct CardRow: View {
     let card: SnippetCard
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     private var detail: String {
         let date = card.updatedAt.formatted(.dateTime.month(.abbreviated).day())
@@ -56,11 +58,21 @@ private struct CardRow: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Circle()
-                .fill(card.status.tint)
-                .frame(width: 8, height: 8)
-                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 1 }
-                .accessibilityHidden(true)
+            Group {
+                if differentiateWithoutColor {
+                    // System Settings → Accessibility → Display → Differentiate
+                    // Without Colour: a distinct shape per status.
+                    Image(systemName: card.status.symbolName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Circle()
+                        .fill(card.status.tint)
+                        .frame(width: 8, height: 8)
+                        .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 1 }
+                }
+            }
+            .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(card.title.isEmpty ? "Untitled" : card.title)
                     .fontWeight(.medium)
