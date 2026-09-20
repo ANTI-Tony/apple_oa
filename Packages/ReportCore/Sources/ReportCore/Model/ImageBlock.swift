@@ -63,6 +63,9 @@ public struct ImageBlock: Identifiable, Codable, Hashable, Sendable {
     public var pixelSize: PixelSize?
     /// Original file name, kept for export bookkeeping.
     public var fileName: String?
+    /// Number of words text recognition found in the image, when it was run.
+    /// Lets the linter flag images that are mostly text (WCAG 1.4.5).
+    public var recognizedWordCount: Int?
 
     public init(
         id: UUID = UUID(),
@@ -72,7 +75,8 @@ public struct ImageBlock: Identifiable, Codable, Hashable, Sendable {
         caption: String = "",
         isDecorative: Bool = false,
         pixelSize: PixelSize? = nil,
-        fileName: String? = nil
+        fileName: String? = nil,
+        recognizedWordCount: Int? = nil
     ) {
         self.id = id
         self.imageData = imageData
@@ -82,6 +86,7 @@ public struct ImageBlock: Identifiable, Codable, Hashable, Sendable {
         self.isDecorative = isDecorative
         self.pixelSize = pixelSize
         self.fileName = fileName
+        self.recognizedWordCount = recognizedWordCount
     }
 
     public var hasAcceptableAltText: Bool {

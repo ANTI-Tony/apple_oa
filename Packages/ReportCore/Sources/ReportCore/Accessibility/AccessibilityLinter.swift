@@ -12,6 +12,11 @@ public enum AccessibilityRule: String, CaseIterable, Sendable {
     case statusContrast
     case metricsHaveLabels
     case blocksHaveContent
+    case sectionsHaveHeadings
+    case meaningNotByColorAlone
+    case noImagesOfText
+    case noLongRunsOfCapitals
+    case sentencesAreReadable
 
     public var title: String {
         switch self {
@@ -24,6 +29,11 @@ public enum AccessibilityRule: String, CaseIterable, Sendable {
         case .statusContrast: "Status indicator contrast is at least 3:1"
         case .metricsHaveLabels: "Every metric has a label"
         case .blocksHaveContent: "No empty blocks"
+        case .sectionsHaveHeadings: "Sections have headings to navigate by"
+        case .meaningNotByColorAlone: "Text does not rely on colour words alone"
+        case .noImagesOfText: "Images are not used in place of text"
+        case .noLongRunsOfCapitals: "No long runs of capital letters"
+        case .sentencesAreReadable: "Sentences are a readable length"
         }
     }
 
@@ -36,6 +46,11 @@ public enum AccessibilityRule: String, CaseIterable, Sendable {
         case .accentContrast, .statusContrast: "WCAG 1.4.11 Non-text Contrast"
         case .metricsHaveLabels: "WCAG 1.3.1 Info and Relationships"
         case .blocksHaveContent: "Best practice"
+        case .sectionsHaveHeadings: "WCAG 2.4.10 Section Headings"
+        case .meaningNotByColorAlone: "WCAG 1.4.1 Use of Color"
+        case .noImagesOfText: "WCAG 1.4.5 Images of Text"
+        case .noLongRunsOfCapitals: "Best practice (readability, screen readers)"
+        case .sentencesAreReadable: "WCAG 3.1.5 Reading Level"
         }
     }
 }
@@ -121,7 +136,9 @@ public enum AccessibilityLinter {
         issues += lintTheme(card.theme)
         for block in card.blocks {
             issues += lint(block, theme: card.theme)
+            issues += ContentChecks.lint(block)
         }
+        issues += ContentChecks.lintHeadings(card)
         return AccessibilityReport(issues: issues, rulesEvaluated: AccessibilityRule.allCases.count)
     }
 
