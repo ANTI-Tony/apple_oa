@@ -1,0 +1,235 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "": {},
+    "%@ block %lld of %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ block %2$lld of %3$lld"
+          }
+        }
+      }
+    },
+    "%@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@…": {},
+    "%lld metric%@ detected · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld metric%2$@ detected · %3$@"
+          }
+        }
+      }
+    },
+    "%lld metrics were detected. Insert them as a metrics block, or keep the original text.": {},
+    "%lld × %lld px · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld × %2$lld px · %3$@"
+          }
+        }
+      }
+    },
+    "%lld%%": {},
+    "1× (standard)": {},
+    "2× (Retina)": {},
+    "3×": {},
+    "About": {},
+    "Accessibility": {},
+    "Accessibility Inspector": {},
+    "Add Image…": {},
+    "Add Metric": {},
+    "Add Metrics": {},
+    "Add Text": {},
+    "Alt text": {},
+    "Alt text is required": {},
+    "Alternative text": {},
+    "Amount": {},
+    "Author name": {},
+    "Blank lines separate paragraphs. Lines starting with “- ” become a bulleted list.": {},
+    "Body text": {},
+    "Build": {},
+    "Cancel": {},
+    "Caption": {},
+    "Caption (optional)": {},
+    "Card": {},
+    "Card Title": {},
+    "Card from Clipboard": {},
+    "Card image": {},
+    "Card subtitle": {},
+    "Card title": {},
+    "Card: %@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Card: %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Cards": {},
+    "Change": {},
+    "Change amount": {},
+    "Change direction": {},
+    "Change sentiment": {},
+    "Checks": {},
+    "Choose File…": {},
+    "Choose a card in the sidebar or create a new one with ⌘N.": {},
+    "Copy": {},
+    "Copy HTML Source": {},
+    "Copy as Image": {},
+    "Copy as Markdown": {},
+    "Copy as Plain Text": {},
+    "Copy for Email": {},
+    "Copy for Email (⇧⌘C). Hold for other formats.": {},
+    "Copy for Slack": {},
+    "Create Card from Clipboard": {},
+    "Create a new card (⌘N). Hold to pick a template.": {},
+    "Create one with ⌘N.": {},
+    "Created “%@” with %lld block%@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Created “%1$@” with %2$lld block%3$@."
+          }
+        }
+      }
+    },
+    "Creates a new report card from the text, table or image on the clipboard.": {},
+    "Data file": {},
+    "Data to import": {},
+    "Decorative image (screen readers skip it)": {},
+    "Default template": {},
+    "Default theme": {},
+    "Delete": {},
+    "Delete %@ block": {},
+    "Delete Card": {},
+    "Delete block": {},
+    "Describe the image for people who cannot see it": {},
+    "Drop images, CSV, JSON or text": {},
+    "Duplicate": {},
+    "Duplicate Card": {},
+    "Export": {},
+    "Export as %@…": {},
+    "Extract Metrics": {},
+    "Features": {},
+    "Fix before sharing": {},
+    "Heading": {},
+    "Import Cards…": {},
+    "Import Data…": {},
+    "Import metrics": {},
+    "Include “Updated” footer": {},
+    "Insert": {},
+    "Insert as Metrics": {},
+    "Insert as Text": {},
+    "Insert image": {},
+    "Insert text": {},
+    "Insert the clipboard as the right kind of block: image, metrics or text (⇧⌘V)": {},
+    "Issues": {},
+    "Jumps to the block in the editor": {},
+    "Label": {},
+    "Layout": {},
+    "List, %lld items": {},
+    "Looks like metric data": {},
+    "Metric": {},
+    "Metric %@": {},
+    "Metric label": {},
+    "Metric value": {},
+    "Metrics heading": {},
+    "Metrics layout": {},
+    "Move %@ block down": {},
+    "Move %@ block up": {},
+    "Move down": {},
+    "Move up": {},
+    "New Card": {},
+    "New Card from Template": {},
+    "New cards": {},
+    "No blocks yet. Add one below, use Smart Paste, or drop files onto this area.": {},
+    "No cards": {},
+    "Nothing recognisable yet. Try one metric per line, like “Velocity: 42”.": {},
+    "On-device classifier proposes a starting description": {},
+    "Open the accessibility inspector": {},
+    "Optional": {},
+    "PNG resolution": {},
+    "Paste CSV, spreadsheet cells, JSON or “Label: value” lines": {},
+    "Pasted image preview": {},
+    "Point": {},
+    "Preview": {},
+    "Preview of %lld metrics": {},
+    "Preview scaled to %lld percent": {},
+    "Preview width": {},
+    "Project · period": {},
+    "Read numbers from a screenshot into a new metrics block": {},
+    "Ready to share": {},
+    "Remove metric %@": {},
+    "Replace existing metrics": {},
+    "Replace…": {},
+    "Required unless the image is marked decorative": {},
+    "Save the card as a file": {},
+    "Search cards": {},
+    "Section heading": {},
+    "Section heading (optional)": {},
+    "Select a card": {},
+    "Select a card to see its accessibility checks.": {},
+    "Sentiment": {},
+    "Share via Mail, Messages, AirDrop and more": {},
+    "Shortcuts support is disabled in this build.": {},
+    "Show or hide the accessibility inspector (⌥⌘I)": {},
+    "Smart Paste": {},
+    "Status": {},
+    "Status: %@": {},
+    "Subtitle": {},
+    "Suggest Alt Text": {},
+    "The live preview appears here.": {},
+    "The preview is scaled to fit the column. Exports use the full width.": {},
+    "Theme": {},
+    "Title": {},
+    "Trend: %lld points from imported data": {},
+    "Updated %@": {},
+    "Use Clipboard": {},
+    "Value": {},
+    "Version": {},
+    "Width": {},
+    "Write a paragraph, or start lines with “- ” for bullets.": {},
+    "e.g. 5%": {},
+    "· %@": {},
+    "•": {}
+  },
+  "version": "1.0"
+}
