@@ -1,0 +1,53 @@
+name: Pages
+
+# Publishes the card gallery to GitHub Pages. The pages are rendered by the
+# same HTMLRenderer the app uses, via the `reportcard` command-line tool, so
+# the public site is a living sample of the app's accessible, responsive output.
+#
+# One-time setup: repository Settings → Pages → Source: GitHub Actions.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Accessibility gate
+        run: |
+          cd Packages/ReportCore
+          for template in $(swift run -c release reportcard templates | cut -f1); do
+            swift run -c release reportcard lint --template "$template" --strict
+          done
+      - name: Generate site
+        run: |
+          cd Packages/ReportCore
+          swift run -c release reportcard site --out "$GITHUB_WORKSPACE/_site" \
+            --repo-url "${{ github.server_url }}/${{ github.repository }}"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: ReportCore tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: Packages/ReportCore/.build
+          key: spm-${{ runner.os }}-${{ hashFiles('Packages/ReportCore/Package.swift') }}
+      - name: Test
+        run: cd Packages/ReportCore && swift test --parallel
+      - name: Smoke-test the command-line tool
+        run: |
+          cd Packages/ReportCore
+          swift run reportcard lint --template weekly_status --strict
+          swift run reportcard site --out "$RUNNER_TEMP/site"
+          test -f "$RUNNER_TEMP/site/index.html"
+
+  app:
+    name: App build and unit tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      # The committed project is a convenience; project.yml is the source of truth.
+      # CI always builds from a freshly generated project and only warns on drift,
+      # because different XcodeGen versions can serialise the same project differently.
+      - name: Generate project from project.yml
+        run: |
+          xcodegen generate
+          git diff --quiet -- ReportingBuilder.xcodeproj/project.pbxproj || \
+            echo "::warning::ReportingBuilder.xcodeproj differs from project.yml output. Run 'make generate' and commit."
+      - name: Build
+        run: >
+          xcodebuild -project ReportingBuilder.xcodeproj -scheme ReportingBuilder
+          -destination 'platform=macOS' -configuration Debug build
+          CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=YES
+      - name: Unit tests
+        run: >
+          xcodebuild -project ReportingBuilder.xcodeproj -scheme ReportingBuilder
+          -destination 'platform=macOS' -configuration Debug test
+          -only-testing:ReportingBuilderTests -resultBundlePath TestResults.xcresult
+          CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=YES
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
+
+  lint:
+    name: SwiftLint and SwiftFormat
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: brew install swiftlint swiftformat
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
+      - name: SwiftFormat check
+        run: swiftformat --lint .
