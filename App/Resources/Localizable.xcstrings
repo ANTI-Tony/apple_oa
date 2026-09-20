@@ -50,11 +50,24 @@
         }
       }
     },
+    "%@. Editing is paused." : {
+
+    },
     "%@. Show the accessibility check." : {
 
     },
     "%@…" : {
 
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
     },
     "%lld metric%@ detected · %@" : {
       "localizations" : {
@@ -114,6 +127,9 @@
     "Add to card" : {
 
     },
+    "API key" : {
+
+    },
     "Arrange" : {
 
     },
@@ -127,6 +143,9 @@
 
     },
     "Bad News" : {
+
+    },
+    "Blocks" : {
 
     },
     "Build" : {
@@ -175,7 +194,13 @@
     "Check Accessibility" : {
 
     },
+    "Check every number against your notes before sharing. A model can be wrong." : {
+
+    },
     "Checks" : {
+
+    },
+    "Choose a card in the sidebar to format it." : {
 
     },
     "Choose a card in the sidebar, or press ⌘N for a new one." : {
@@ -185,6 +210,12 @@
 
     },
     "Click part of the card to format it." : {
+
+    },
+    "Close" : {
+
+    },
+    "Colour Vision" : {
 
     },
     "Copy" : {
@@ -209,6 +240,9 @@
 
     },
     "Copy HTML Source" : {
+
+    },
+    "Create Card" : {
 
     },
     "Create Card from Clipboard" : {
@@ -263,6 +297,9 @@
     "Details" : {
 
     },
+    "Done" : {
+
+    },
     "Duplicate" : {
 
     },
@@ -273,6 +310,9 @@
 
     },
     "Email clients wrap around 600 points; chat tools show narrower cards" : {
+
+    },
+    "Endpoint" : {
 
     },
     "Export" : {
@@ -299,6 +339,15 @@
     "Format…" : {
 
     },
+    "From Notes…" : {
+
+    },
+    "Generate" : {
+
+    },
+    "Generate Again" : {
+
+    },
     "Good" : {
 
     },
@@ -306,6 +355,12 @@
 
     },
     "Heading" : {
+
+    },
+    "Hear This Card" : {
+
+    },
+    "https://…" : {
 
     },
     "Image" : {
@@ -329,6 +384,9 @@
     "Include “Updated” footer" : {
 
     },
+    "Increase Contrast is on in System Settings" : {
+
+    },
     "Insert" : {
 
     },
@@ -350,13 +408,22 @@
     "Issues" : {
 
     },
+    "It can turn meeting notes or a chat log into a structured card. It is off by default because it sends the text you give it to a language model: Apple's on-device model where available, otherwise an endpoint you configure." : {
+
+    },
     "Label" : {
+
+    },
+    "Large and Extra Large are large-print editions for readers with low vision. Every export follows." : {
 
     },
     "Layout" : {
 
     },
     "List, %lld items" : {
+
+    },
+    "Listen" : {
 
     },
     "Looks like metric data" : {
@@ -369,6 +436,12 @@
 
     },
     "Metrics" : {
+
+    },
+    "Model" : {
+
+    },
+    "Model name" : {
 
     },
     "Move Block Down" : {
@@ -395,6 +468,12 @@
     "New card (⌘N). Hold for templates." : {
 
     },
+    "New Card from Notes" : {
+
+    },
+    "New Card from Notes…" : {
+
+    },
     "New cards" : {
 
     },
@@ -413,13 +492,31 @@
     "No metrics yet. Add one in the Format inspector, or import a table." : {
 
     },
+    "Not available on this Mac. %@" : {
+
+    },
+    "Notes" : {
+
+    },
+    "Nothing leaves this Mac." : {
+
+    },
     "Nothing recognisable yet. Try one metric per line, like “Velocity: 42”." : {
+
+    },
+    "Off by default. Used only when you choose New Card from Notes or a Refine button, and only for the text you give it. A custom endpoint receives that text over HTTPS; the key is kept in the Keychain. Images and your other cards are never sent. Do not send confidential information to a provider your organisation has not approved." : {
+
+    },
+    "Open Settings…" : {
 
     },
     "Optional" : {
 
     },
     "Paste" : {
+
+    },
+    "Paste a key" : {
 
     },
     "Paste as Block" : {
@@ -443,6 +540,9 @@
     "Preview of %lld metrics" : {
 
     },
+    "Print…" : {
+
+    },
     "Project · Period" : {
 
     },
@@ -458,6 +558,12 @@
     "Ready to Share" : {
 
     },
+    "Refine" : {
+
+    },
+    "Remove" : {
+
+    },
     "Remove %@" : {
 
     },
@@ -470,7 +576,28 @@
     "Replace…" : {
 
     },
+    "Returns to the editable card" : {
+
+    },
+    "Save" : {
+
+    },
+    "Saved in Keychain" : {
+
+    },
     "Search" : {
+
+    },
+    "Send" : {
+
+    },
+    "Send these notes to %@?" : {
+
+    },
+    "Send this text to %@?" : {
+
+    },
+    "Set Up Writing Assistance…" : {
 
     },
     "Share" : {
@@ -491,6 +618,15 @@
     "Shows the block in the inspector" : {
 
     },
+    "Simulate" : {
+
+    },
+    "Simulate Colour Vision" : {
+
+    },
+    "Simulating %@" : {
+
+    },
     "Size" : {
 
     },
@@ -498,6 +634,12 @@
 
     },
     "Status: %@" : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop Speaking" : {
 
     },
     "Subtitle" : {
@@ -509,6 +651,12 @@
     "Text" : {
 
     },
+    "Text Size" : {
+
+    },
+    "The card as seen with %@" : {
+
+    },
     "Theme" : {
 
     },
@@ -518,10 +666,19 @@
     "Title" : {
 
     },
+    "Transcript" : {
+
+    },
     "Type on the card. Start a line with “- ” for a bullet; leave a blank line between paragraphs." : {
 
     },
     "Use Clipboard" : {
+
+    },
+    "Use High Contrast Theme" : {
+
+    },
+    "Use Sample Notes" : {
 
     },
     "Value" : {
@@ -536,6 +693,9 @@
     "What does the image show?" : {
 
     },
+    "Where the notes are processed" : {
+
+    },
     "Whether this change is good or bad news. Guessed from the label." : {
 
     },
@@ -543,6 +703,12 @@
 
     },
     "Write something. Start a line with “- ” for a bullet." : {
+
+    },
+    "Writing Assistance" : {
+
+    },
+    "Writing assistance is off." : {
 
     }
   },
