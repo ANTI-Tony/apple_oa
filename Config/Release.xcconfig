@@ -1,0 +1,9 @@
+#include "Shared.xcconfig"
+
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+ENABLE_TESTABILITY = NO
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+// Sample content is a first-run convenience; keep it on for the POC build too
+// so reviewers see a populated app. Set to NO for a production flavour.
+FEATURE_SAMPLE_CONTENT = YES

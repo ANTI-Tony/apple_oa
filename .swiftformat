@@ -1,0 +1,14 @@
+# SwiftFormat configuration. Run `make format` (or `make format-check` in CI).
+--swiftversion 6.0
+--indent 4
+--maxwidth 140
+--commas always
+--semicolons never
+--trimwhitespace always
+--stripunusedargs closure-only
+--self remove
+--importgrouping testable-bottom
+--wraparguments before-first
+--wrapcollections before-first
+--disable wrapMultilineStatementBraces, redundantReturn, blankLinesAtStartOfScope, hoistPatternLet, andOperator, preferKeyPath
+--exclude .build, DerivedData, ReportingBuilder.xcodeproj, Packages/ReportCore/.build

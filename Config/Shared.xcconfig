@@ -1,0 +1,14 @@
+// Settings shared by every configuration.
+// Values here flow into Info.plist through $(VARIABLE) substitution, see project.yml.
+
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+MACOSX_DEPLOYMENT_TARGET = 14.0
+
+// Feature flags. Read at runtime by AppConfiguration; flip per configuration below.
+FEATURE_VISION_ASSIST = YES
+FEATURE_SAMPLE_CONTENT = YES
+FEATURE_APP_INTENTS = YES
+
+// Default width of the rendered card in points. Email clients wrap at ~600.
+EXPORT_DEFAULT_WIDTH = 600
