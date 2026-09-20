@@ -29,3 +29,7 @@ dist/
 # Editors
 .vscode/
 .idea/
+
+# Presentation deck tooling
+deck/node_modules/
+deck/qa/
