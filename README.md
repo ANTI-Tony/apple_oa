@@ -4,7 +4,10 @@ A native macOS tool that turns raw text, metric data and images into polished,
 accessible **Snippet Cards** ready to paste into Mail, Slack, Notes or any
 other tool your team uses.
 
-![Reporting Builder: card list, the card being edited on the canvas, and the Format inspector](docs/assets/app-window.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/app-window-dark.png">
+  <img src="docs/assets/app-window.png" alt="Reporting Builder: the card list, the card being edited on the canvas, and the Format inspector">
+</picture>
 
 > Proof of concept for the brief "Project Reporting Builder". Five-day scope,
 > documented trade-offs, no backend.
@@ -16,15 +19,24 @@ other tool your team uses.
 | Ingest raw text, metric data and images | Type or paste text; paste CSV, spreadsheet cells, JSON or `Label: value` lines and get metrics with change arrows; drop or paste images. **Smart Paste** (⇧⌘V) picks the block type for you. On-device Vision can read numbers out of a dashboard screenshot. |
 | Modular cards | Cards are ordered blocks: text, metrics (grouped tiles or a table, with sparklines) and images. Reorder from the keyboard (⌥⌘↑/↓), the context menu or the inspector. Six templates to start from. |
 | Visually polished | Built like a Pages or Keynote document window: a list, the card itself as the editing canvas, and a Format inspector. The card is typographic: one large title, sentence-case headings, SF Rounded numerals, a single quiet group for metrics. Four themes; PNG export at 1×–3×. |
-| Accessibility-compliant | A built-in **accessibility linter** checks nine WCAG-mapped rules as you type. The toolbar shows the verdict; the inspector's Accessibility tab (⇧⌘K) lists issues and jumps to the block at fault. An image without a description says so on the canvas. Exported HTML is semantic; status is never colour-only; images require alt text. The app itself is VoiceOver- and keyboard-operable and passes the XCTest accessibility audit. |
+| Accessibility-compliant | A built-in **accessibility linter** checks fourteen WCAG-mapped rules as you type, from contrast and alt text to "the red items" and images that are mostly text. **Hear This Card** reads the card the way a screen reader presents it; **Colour Vision** shows it as people with colour-vision deficiencies see it. Cards can be set in **large print**, and export as a **tagged PDF**. The toolbar shows the verdict; the inspector's Accessibility tab (⇧⌘K) lists issues and jumps to the block at fault. Exported HTML is semantic; status is never colour-only; images require alt text. The app itself is built for VoiceOver and the keyboard, and its UI tests include XCTest's accessibility audit. |
 | Instantly copy or export | **Copy for Email** (⇧⌘C) puts rich text with images, HTML and plain text on the clipboard at once. Also copy as image, Markdown, Slack format, plain text or HTML source. Export PNG, HTML, Markdown, plain text or JSON. Share sheet (Mail, Messages, AirDrop, Notes). Drag the preview straight into another app. |
 | Responsive | The window reflows from list + canvas + inspector, to canvas + inspector, to the canvas alone (minimum 480 pt), and the card on the canvas is fluid. Exported HTML is a responsive page. |
 | Deploy on cloud | GitHub Actions publishes the app to **Releases** and a **card gallery to GitHub Pages**, rendered headless by the `reportcard` command-line tool from the same renderers. The Pages build fails if any template stops passing the accessibility linter. |
-| Surprise and delight | Shortcuts action "Create Card from Clipboard"; alt-text suggestions; live WCAG contrast checking of every theme; JSON import/export; `reportcard lint` as an accessibility gate for CI pipelines. |
+| Surprise and delight | **New Card from Notes** turns rough meeting notes into a structured, linted card with a language model (opt-in, on-device where available; see the note below). Audio Graphs for metric trends, a VoiceOver Blocks rotor and block actions, Undo/Redo, Continuity Camera import, printing, a Shortcuts action, alt-text suggestions, JSON import/export, and `reportcard lint` as an accessibility gate for CI pipelines. |
 
-| Accessibility tab of the inspector | The same app in a 640 pt window, in Dark Mode |
+| Hear This Card | Colour Vision |
 |---|---|
-| ![Format inspector showing the accessibility verdict and the nine checks](docs/assets/accessibility-report.png) | ![Compact layout: the card alone, fluid to the window width](docs/assets/layout-compact.png) |
+| ![The block being read is highlighted on the card; the transcript marks the current line and shows "Image. No description." in red](docs/assets/hear-this-card.png) | ![The card as seen with deuteranopia; status and changes still read because they are shapes and words](docs/assets/colour-vision.png) |
+| **New Card from Notes** (here with the canned model the UI tests use) | **Large print**, and the same app in a 640 pt window in Dark Mode |
+| ![Rough meeting notes on the left, the drafted and linted card on the right](docs/assets/new-card-from-notes.png) | <img src="docs/assets/large-print.png" alt="The same card at Extra Large text size" width="58%"> <img src="docs/assets/layout-compact.png" alt="Compact layout: the card alone, fluid to the window width" width="38%"> |
+
+> **About the language-model features.** They are off by default and provider-agnostic: Apple's on-device
+> model where available, otherwise an OpenAI-compatible endpoint you configure. For this proof of concept the
+> endpoint defaults to a public API so the feature can be demonstrated on a Mac without Apple Intelligence.
+> **Sending real project data to a public third-party model is not acceptable in a real business setting**;
+> production would use the on-device model or an approved internal gateway. The reasoning and the guard rails
+> are in [ADR 0011](docs/adr/0011-opt-in-writing-assistance.md).
 
 ## Quick start
 
@@ -72,8 +84,14 @@ swift run reportcard lint --input card.json --strict    # exit 1 if not accessib
    card; layout and data import for metrics; description for images.
 5. **Check** the shield in the toolbar. If it turns red, the Accessibility tab
    says what to fix and takes you there.
-6. **Copy for Email** (⇧⌘C) and paste into Mail. Hold the Copy button for other
-   formats and file export, or use the share button.
+6. **Hear This Card** (⌥⌘L) in the Accessibility tab, and try **Colour Vision**.
+7. **Copy for Email** (⇧⌘C) and paste into Mail. Hold the Copy button for other
+   formats and file export (PNG, tagged PDF, HTML, Markdown, text, JSON), print
+   with ⌘P, or use the share button.
+
+To try **New Card from Notes** (⇧⌘N): Settings → Writing Assistance → turn it on,
+choose the model, and for a custom endpoint paste an API key (kept in the
+Keychain). The sheet has sample notes.
 
 ## Architecture in one paragraph
 
@@ -102,12 +120,16 @@ and drop, Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/AR
 
 ## Engineering practice
 
-- **Tests**: 65 Swift Testing cases for the package (parsers, renderers,
-  contrast maths, linter, templates, and the command-line tool including site
-  generation), 25 for the app layer (store, persistence, export, pasteboard,
-  ingestion, configuration, window layout), and 7 XCUITest end-to-end flows
-  including `performAccessibilityAudit()` and the compact layout. Run
-  `make test` and `make test-ui`.
+- **Tests**: 90 Swift Testing cases for the package (parsers, renderers,
+  contrast maths, the fourteen linter rules, spoken narration, large print, the
+  draft parser and prompts, templates, and the command-line tool), 47 for
+  the app layer (store and undo, persistence, export including tagged PDF,
+  pasteboard, ingestion, the assistant with a stubbed network, colour-vision
+  maths, configuration, window layout), and 12 XCUITest end-to-end flows: the
+  canvas, the inspector, the undescribed-image prompt, Hear This Card (muted),
+  Colour Vision, New Card from Notes with a canned model, and
+  `performAccessibilityAudit()`. Run `make test`; run the UI tests from Xcode
+  (⌘U), because macOS asks the person at the keyboard to allow UI automation.
 - **CI**: GitHub Actions runs package tests and a command-line smoke test,
   builds the app from a freshly generated project and runs its unit tests, and
   checks SwiftLint and SwiftFormat. See `.github/workflows/ci.yml`.
@@ -119,15 +141,18 @@ and drop, Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/AR
 - **Documentation**: this README, [ARCHITECTURE](docs/ARCHITECTURE.md),
   [ACCESSIBILITY](docs/ACCESSIBILITY.md), [EXPORT_COMPATIBILITY](docs/EXPORT_COMPATIBILITY.md),
   [DEPLOYMENT](docs/DEPLOYMENT.md), [ADRs](docs/adr/), [CONTRIBUTING](CONTRIBUTING.md),
-  [CHANGELOG](CHANGELOG.md).
+  [CHANGELOG](CHANGELOG.md). The talk is in [deck/](deck/) with its script in
+  [PRESENTATION](docs/PRESENTATION.md).
 
 ## Cloud and deployment
 
 User data is deliberately local-first: cards live in a JSON file inside the
-app sandbox and nothing leaves the Mac. What is deployed is the software and
-its output. GitHub Actions builds and publishes the app to GitHub Releases,
-and renders the template gallery to GitHub Pages with the `reportcard`
-command-line tool, gated on the accessibility linter. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+app sandbox and nothing leaves the Mac unless you turn on writing assistance
+with a custom endpoint and press one of its buttons (ADR 0011). What is deployed is the software and
+its output. GitHub Actions renders the template gallery to GitHub Pages with the
+`reportcard` command-line tool, gated on the accessibility linter, and a version
+tag builds the app and publishes it to GitHub Releases (the workflow is in place;
+no release has been cut yet). [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 covers the pipeline, enterprise distribution (notarisation, Apple Business
 Manager, MDM) and the next step, a share-link service (CloudKit, or a small
 Swift service in a container).
@@ -142,12 +167,21 @@ Swift service in a container).
 - The text markup is intentionally tiny (paragraphs and bullets). Bold,
   links and tables inside text blocks are out of scope.
 - Vision's classifier gives rough alt-text suggestions; the user must edit them.
-- No undo yet for block edits (text fields have their own undo).
+- The on-device language model path (macOS 26 or later) compiles and is guarded by
+  availability checks, but was not run on hardware: the development Mac is on
+  macOS 15. The custom-endpoint path is tested against a stubbed network; a live
+  call needs your own key.
+- Hear This Card, the Audio Graph, the Blocks rotor and block actions are covered
+  by unit tests for their data, and need a person with VoiceOver for the experience.
+- The tagged PDF is checked for real text, metadata and a structure tree, not
+  validated against PDF/UA.
+- Undo covers structural edits and card deletion; typing is undone by the text
+  field it happens in.
 - English only. A String Catalog is in place and kept in sync by the build,
   so translating is a matter of filling it in; user-facing strings built in
   code (notices, accessibility labels) would need `String(localized:)` first.
-- The author shown in a card's footer comes from Settings when the card is
-  created; there is no per-card author field in the editor.
+- The UI tests, including the accessibility audit, run from Xcode only. They were
+  written against the accessibility identifiers in the code; run them with ⌘U.
 
 ## Project layout
 
@@ -158,7 +192,8 @@ Packages/ReportCore/        Platform-neutral domain package, reportcard CLI, tes
 App/                        macOS app: Store, Views, Export, Ingestion, Intents, Config
 Tests/AppTests/             App unit tests (Swift Testing)
 Tests/AppUITests/           XCUITest flows + accessibility audit
-docs/                       Architecture, accessibility, export matrix, deployment, ADRs
+docs/                       Architecture, accessibility, export matrix, deployment, ADRs, the talk
+deck/                       The presentation (.pptx) and the script that generates it
 .github/workflows/          ci.yml (tests, lint), release.yml (app → Releases), pages.yml (gallery → Pages)
 Makefile                    generate / build / run / test / lint / format
 ```

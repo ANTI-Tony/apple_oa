@@ -20,8 +20,11 @@ App (macOS, SwiftUI + AppKit)
 ├── Views/                   MainWindow, Sidebar, Canvas (the card edited in place),
 │                            Card (CardStyle, CardSurface, static CardView for export),
 │                            Inspector (Card / Block / Accessibility tabs), Sheets, Settings
-├── Export/                  CardExporter (PNG/HTML/MD/TXT/JSON), PasteboardWriter,
-│                            AttributedCardRenderer (RTF/RTFD), CardTransfer (share, drag)
+├── Export/                  CardExporter (PNG/PDF/HTML/MD/TXT/JSON), PDFCardComposer (tagged PDF),
+│                            PasteboardWriter, AttributedCardRenderer (RTF/RTFD), CardTransfer, CardPrinter
+├── Assistant/               TextAssistant protocol, OnDeviceAssistant (Foundation Models),
+│                            OpenAICompatibleAssistant, AssistantSettings, SecretStore (Keychain)
+├── Accessibility/           SpeechPlayer (Hear This Card), VisionSimulation, TrendAudioGraph
 ├── Ingestion/               DropIngestor, PasteIngestor, ImageImport, VisionServices
 ├── Intents/                 CreateCardFromClipboardIntent, AppShortcutsProvider
 └── Config/                  AppConfiguration (Info.plist flags), UserPreferences (UserDefaults)
@@ -32,8 +35,9 @@ ReportCLIKit + reportcard (same package, Foundation only)
 ReportCore (SwiftPM package, macOS 14+ / iOS 17+, Foundation only)
 ├── Model/                   SnippetCard, Block (text | metrics | image), CardTheme, HexColor, ReportStatus
 ├── Ingestion/               MetricsParser, ContentDetector, NumberParsing
-├── Rendering/               HTMLRenderer, MarkdownRenderer, PlainTextRenderer, CardDateFormatting
-├── Accessibility/           AccessibilityLinter (rules ↔ WCAG), contrast maths in HexColor
+├── Rendering/               HTMLRenderer, MarkdownRenderer, PlainTextRenderer, SpokenRenderer, CardDateFormatting
+├── Accessibility/           AccessibilityLinter (14 rules ↔ WCAG), ContentChecks, contrast maths in HexColor
+├── Assistant/               AssistantPrompts, CardDraft + CardDraftParser (untrusted reply → card)
 ├── Templates/               CardTemplate (six built-ins)
 └── Support/                 CardCodec (JSON), string escaping
 ```

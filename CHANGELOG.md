@@ -27,6 +27,35 @@ All notable changes to this project are documented here. The format follows
   Copy menu.
 
 ### Added
+- Writing assistance (opt-in, provider-agnostic): New Card from Notes and Refine
+  for text blocks, with Apple's on-device model or a configurable
+  OpenAI-compatible endpoint, Keychain storage, per-host consent, and a defensive
+  reply parser. The remote path is for demonstration only (ADR 0011).
+- Accessibility beyond compliance (ADR 0012): Hear This Card with follow-along
+  highlight and transcript; colour-vision simulation; five more linter rules
+  (fourteen in all) including images-of-text via on-device OCR; large print across
+  every export; tagged PDF export and printing; Audio Graphs for metric trends;
+  VoiceOver block actions and a Blocks rotor; Differentiate Without Colour,
+  Increase Contrast and Reduce Transparency honoured; Undo and Redo; Continuity
+  Camera import.
+- The presentation: `deck/` holds the generated .pptx and its source, and
+  `docs/PRESENTATION.md` the script, timings, demo checklist and likely questions.
+- UI tests for the undescribed-image prompt, Hear This Card (muted), Colour Vision
+  and New Card from Notes with a canned model.
+
+### Fixed
+- The "Add Description" prompt sat on top of the image and could hide part of a
+  chart, and its white-on-orange label failed contrast. It now sits under the
+  image as a bordered button with a warning glyph.
+- The toolbar shield did not turn red, because a toolbar draws template symbols in
+  its own colour. It is now a palette symbol.
+- The line being spoken in the transcript was marked by colour alone. It now has
+  a speaker glyph, and pressing play opens the transcript.
+- The Done button of the colour-vision banner was merged into a static text
+  element and could not be reached on its own with VoiceOver.
+- Inspector: the accessibility verdict wrapped ragged-left in a trailing column,
+  section footers did not line up with their headers, and the empty-selection
+  placeholder was oversized for a narrow column.
 - `reportcard` command-line tool (`ReportCLIKit`): render templates or JSON cards
   in every text format, `lint` with CI exit codes, `site` to build a static gallery.
 - GitHub Actions: `release.yml` publishes the zipped app with a checksum to

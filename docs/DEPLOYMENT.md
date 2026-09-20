@@ -67,8 +67,12 @@ warning (right-click → Open). For real distribution:
    organisation's MDM. Updates ride the same channel; Sparkle is the
    alternative for self-updating builds.
 
-Runtime posture: App Sandbox on with user-selected file access only, Hardened
-Runtime on, no network entitlement because the app makes no network calls.
+Runtime posture: App Sandbox on, with user-selected file access, printing, and
+outgoing network connections. The network entitlement exists only for opt-in
+writing assistance (ADR 0011); with that feature off, or set to the on-device
+model, the app makes no network calls. A build with `FEATURE_WRITING_ASSISTANCE =
+NO` removes the feature, and the entitlement can be dropped with it. Hardened
+Runtime is on.
 
 ## Next step: share links and team libraries
 
@@ -91,5 +95,8 @@ GET  /cards/{id}.md    → MarkdownRenderer
 
 ## Telemetry and privacy
 
-None. Cards, images and Vision analysis stay on the device. The gallery on
-Pages contains only the built-in template content.
+None. Cards, images and Vision analysis stay on the device. The one exception is
+explicit: if the user enables writing assistance with a custom endpoint, the text
+they submit to it goes to that endpoint. In an enterprise that endpoint must be an
+approved internal gateway or the on-device model, never a public API (ADR 0011).
+The gallery on Pages contains only the built-in template content.
