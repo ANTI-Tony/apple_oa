@@ -17,11 +17,11 @@ public enum ReportStatus: String, Codable, CaseIterable, Identifiable, Sendable 
 
     public var label: String {
         switch self {
-        case .onTrack: "On track"
-        case .atRisk: "At risk"
-        case .offTrack: "Off track"
+        case .onTrack: "On Track"
+        case .atRisk: "At Risk"
+        case .offTrack: "Off Track"
         case .completed: "Completed"
-        case .notStarted: "Not started"
+        case .notStarted: "Not Started"
         }
     }
 

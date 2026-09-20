@@ -6,9 +6,11 @@ Two things must be accessible: the app, and the cards people share.
 
 ### Linter rules
 
-`AccessibilityLinter` evaluates every card on each change. Errors turn the
-badge above the preview red; warnings turn it orange. Clicking the badge (or
-⌥⌘I) opens the report, and selecting an issue scrolls to the offending block. Rules and their WCAG 2.1
+`AccessibilityLinter` evaluates every card on each change. The shield in the
+toolbar turns red and shows a count when there are errors. The Accessibility
+tab of the Format inspector (⇧⌘K) lists the issues; selecting one selects the
+block at fault and scrolls to it. An image without a description also carries
+an "Add Description" button on the canvas. Rules and their WCAG 2.1
 success criteria:
 
 | Rule | Severity | Criterion |
@@ -19,7 +21,7 @@ success criteria:
 | Body text contrast ≥ 4.5:1 on background and tiles | error | 1.4.3 Contrast (Minimum) |
 | Secondary text contrast ≥ 4.5:1 | warning | 1.4.3 |
 | Accent contrast ≥ 3:1 | warning | 1.4.11 Non-text Contrast |
-| Status pill contrast ≥ 4.5:1 for all five statuses | error | 1.4.3 |
+| Status indicator contrast ≥ 3:1 for all five statuses (the label itself is body text) | warning | 1.4.11 Non-text Contrast |
 | Change indicator contrast ≥ 4.5:1 on tiles | warning | 1.4.3 |
 | Every metric has a label | error | 1.3.1 Info and Relationships |
 | No empty blocks | warning | best practice |
@@ -30,13 +32,15 @@ tests assert that all four built-in themes and all six templates pass.
 
 ### Exported artifacts
 
-- **HTML**: `lang` attribute, `<h1>`/`<h2>` hierarchy, `<section aria-labelledby>`,
+- **HTML**: `lang` attribute, `<h1>`/`<h2>` hierarchy (shiftable with `baseHeadingLevel`), `<section aria-labelledby>`,
   `<ul>` for bullets, `<table>` with `scope="col"`/`scope="row"` for the
   table layout, `<figure>`/`<figcaption>` with `alt` (empty plus
   `role="presentation"` for decorative images), explicit `width`/`height` to
   avoid layout shift. Change glyphs are `aria-hidden` and paired with
-  visually hidden words ("up 5%, positive"). Status is always text
-  ("Status: On track") with a shape glyph, never colour alone.
+  visually hidden words ("up 5%, positive"). Status is always words
+  ("On Track", announced as "Status: On Track") beside a shape that differs
+  per status, never colour alone. Indicator colours are Apple's
+  increased-contrast system palette.
 - **Markdown / plain text**: alt text appears as `![alt](file)` or
   `[Image: alt]`; changes are spelled out.
 - **PNG**: an image has no semantics. The app never offers PNG as the only
@@ -48,12 +52,14 @@ tests assert that all four built-in themes and all six templates pass.
 ## The app
 
 - Every action is reachable from the menu bar with a keyboard shortcut
-  (⌘N, ⌘D, ⇧⌘C, ⌥⌘C, ⇧⌘V, ⌥⌘I, ⌘⌫, and ⌥⌘↑ / ⌥⌘↓ / ⌥⌘⌫ for the block that
-  has focus). Full Keyboard Access works with standard SwiftUI controls.
-- The interface hides per-block controls until hover to stay calm, but never
-  at the cost of access: the controls also appear on keyboard focus, stay in
-  the accessibility tree for VoiceOver, and are duplicated in the context
-  menu and the Card menu. Drag and drop is an addition, never the only way.
+  (⌘N, ⌘D, ⇧⌘C, ⌥⌘C, ⇧⌘V, ⌥⌘T / ⌥⌘M / ⌥⌘G to insert, ⌥⌘I for the inspector,
+  ⇧⌘K for the accessibility check, ⌘⌫, and ⌥⌘↑ / ⌥⌘↓ / ⌥⌘⌫ for the selected
+  block). Tab moves through every field on the card in reading order.
+- The canvas shows no per-block chrome, but never at the cost of access:
+  arrange and delete are in the Format inspector, the context menu and the Card
+  menu. Drag and drop is an addition, never the only way.
+- Fields on the card are labelled for VoiceOver ("Title", "Value of Velocity",
+  "Change of Open bugs"); a block announces its kind and whether it is selected.
 - Icon-only buttons carry `accessibilityLabel`s; groups use
   `accessibilityElement(children: .combine/.contain)` so VoiceOver reads a
   metric tile as one sentence ("Velocity: 42, up 5%, positive, trend over 5
@@ -74,9 +80,9 @@ tests assert that all four built-in themes and all six templates pass.
 2. VO-right-arrow through the sidebar: hear "Weekly status, On track".
 3. Tab into the editor; hear "Card title, Weekly status".
 4. Navigate to a metrics tile in the preview; hear the full sentence.
-5. Remove the alt text of the image block; hear the badge change to
-   "1 error to fix"; open the report with ⌥⌘I; activate the issue; the editor
-   scrolls to the block.
+5. Select the image, clear its description in the inspector; the toolbar shield
+   reads "1 accessibility error"; press ⇧⌘K; activate the issue; the image is
+   selected and the Block tab opens on its description.
 6. Press ⇧⌘C; hear "Copied. Paste into Mail, Notes or Slack."
 7. Turn on Increase Contrast and Reduce Motion; controls stay legible and the
    banner appears without motion.

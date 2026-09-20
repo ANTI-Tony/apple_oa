@@ -2,14 +2,16 @@ import ReportCore
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Menu bar commands. Every toolbar action has a menu item and a shortcut so
-/// the whole app is operable from the keyboard, including block reordering.
+/// Menu bar commands. Every toolbar and inspector action has a menu item, most
+/// have a shortcut, so the whole app is operable from the keyboard.
 struct CardCommands: Commands {
     let store: CardStore
     let workspace: WorkspaceState
     let preferences: UserPreferences
 
-    @FocusedValue(\.activeBlockID) private var activeBlockID: UUID?
+    private var exportPreferences: ExportPreferences {
+        workspace.exportPreferences(from: preferences)
+    }
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
@@ -18,7 +20,7 @@ struct CardCommands: Commands {
             }
             .keyboardShortcut("n", modifiers: .command)
 
-            Menu("New Card from Template") {
+            Menu("New from Template") {
                 ForEach(CardTemplate.builtIn) { template in
                     Button(template.name) {
                         store.add(template: template, theme: preferences.defaultTheme, author: preferences.authorName)
@@ -30,6 +32,24 @@ struct CardCommands: Commands {
 
             Button("Import Cards…") { importCards() }
                 .keyboardShortcut("o", modifiers: .command)
+        }
+
+        CommandGroup(after: .pasteboard) {
+            Button("Paste as Block") { workspace.insertRequest = .paste }
+                .keyboardShortcut("v", modifiers: [.command, .shift])
+                .disabled(store.selectedCard == nil)
+        }
+
+        CommandMenu("Insert") {
+            Group {
+                Button("Text") { workspace.insertRequest = .text }
+                    .keyboardShortcut("t", modifiers: [.command, .option])
+                Button("Metrics") { workspace.insertRequest = .metrics }
+                    .keyboardShortcut("m", modifiers: [.command, .option])
+                Button("Image…") { workspace.insertRequest = .image }
+                    .keyboardShortcut("g", modifiers: [.command, .option])
+            }
+            .disabled(store.selectedCard == nil)
         }
 
         CommandMenu("Card") {
@@ -45,21 +65,28 @@ struct CardCommands: Commands {
 
                 Divider()
 
-                ForEach(ExportFormat.allCases) { format in
-                    Button("Export as \(format.label)…") { export(format) }
+                Menu("Export") {
+                    ForEach(ExportFormat.allCases) { format in
+                        Button("\(format.label)…") { export(format) }
+                    }
                 }
 
                 Divider()
 
-                Button("Move Block Up") { moveActiveBlock(by: -1) }
+                Button("Move Block Up") { moveSelectedBlock(by: -1) }
                     .keyboardShortcut(.upArrow, modifiers: [.command, .option])
-                    .disabled(activeBlockID == nil)
-                Button("Move Block Down") { moveActiveBlock(by: 1) }
+                    .disabled(workspace.selectedBlockID == nil)
+                Button("Move Block Down") { moveSelectedBlock(by: 1) }
                     .keyboardShortcut(.downArrow, modifiers: [.command, .option])
-                    .disabled(activeBlockID == nil)
-                Button("Delete Block") { deleteActiveBlock() }
+                    .disabled(workspace.selectedBlockID == nil)
+                Button("Delete Block") { deleteSelectedBlock() }
                     .keyboardShortcut(.delete, modifiers: [.command, .option])
-                    .disabled(activeBlockID == nil)
+                    .disabled(workspace.selectedBlockID == nil)
+
+                Divider()
+
+                Button("Check Accessibility") { workspace.reveal(.accessibility) }
+                    .keyboardShortcut("k", modifiers: [.command, .shift])
 
                 Divider()
 
@@ -81,31 +108,33 @@ struct CardCommands: Commands {
         }
 
         CommandGroup(after: .sidebar) {
-            Toggle("Accessibility Report", isOn: Bindable(workspace).showAccessibilityReport)
+            Toggle("Format Inspector", isOn: Bindable(workspace).wantsInspector)
                 .keyboardShortcut("i", modifiers: [.command, .option])
         }
     }
 
     private func copy(_ variant: CopyVariant) {
         guard let card = store.selectedCard else { return }
-        workspace.copy(card, variant: variant, preferences: preferences.exportPreferences)
+        workspace.copy(card, variant: variant, preferences: exportPreferences)
     }
 
     private func export(_ format: ExportFormat) {
         guard let card = store.selectedCard else { return }
-        workspace.export(card, format: format, preferences: preferences.exportPreferences)
+        workspace.export(card, format: format, preferences: exportPreferences)
     }
 
-    private func moveActiveBlock(by offset: Int) {
-        guard var card = store.selectedCard, let blockID = activeBlockID else { return }
+    private func moveSelectedBlock(by offset: Int) {
+        guard var card = store.selectedCard, let blockID = workspace.selectedBlockID else { return }
         card.moveBlock(withID: blockID, by: offset)
         store.update(card)
+        workspace.scrollTarget = blockID
     }
 
-    private func deleteActiveBlock() {
-        guard var card = store.selectedCard, let blockID = activeBlockID else { return }
+    private func deleteSelectedBlock() {
+        guard var card = store.selectedCard, let blockID = workspace.selectedBlockID else { return }
         card.removeBlock(withID: blockID)
         store.update(card)
+        workspace.selectedBlockID = nil
         workspace.announce("Block deleted")
     }
 

@@ -4,7 +4,7 @@ A native macOS tool that turns raw text, metric data and images into polished,
 accessible **Snippet Cards** ready to paste into Mail, Slack, Notes or any
 other tool your team uses.
 
-![Reporting Builder: sidebar, block editor and live preview with the accessibility badge](docs/assets/app-window.png)
+![Reporting Builder: card list, the card being edited on the canvas, and the Format inspector](docs/assets/app-window.png)
 
 > Proof of concept for the brief "Project Reporting Builder". Five-day scope,
 > documented trade-offs, no backend.
@@ -14,17 +14,17 @@ other tool your team uses.
 | Need from the brief | How Reporting Builder answers it |
 |---|---|
 | Ingest raw text, metric data and images | Type or paste text; paste CSV, spreadsheet cells, JSON or `Label: value` lines and get metrics with change arrows; drop or paste images. **Smart Paste** (⇧⌘V) picks the block type for you. On-device Vision can read numbers out of a dashboard screenshot. |
-| Modular cards | Cards are ordered blocks: text, metrics (tiles or table, with sparklines) and images. Reorder from the keyboard (⌥⌘↑/↓), the context menu or hover controls. Six templates to start from. |
-| Visually polished | A deliberately quiet interface: three columns, borderless blocks, controls that appear on hover or focus. Live preview scaled to fit, at email, chat or wide widths; four themes; PNG export at 1×–3×. |
-| Accessibility-compliant | A built-in **accessibility linter** checks nine WCAG-mapped rules as you type. A badge above the preview shows the verdict; click it (or ⌥⌘I) for a report that jumps to the offending block. Exported HTML is semantic; status is never colour-only; images require alt text. The app itself is VoiceOver- and keyboard-operable and passes the XCTest accessibility audit. |
+| Modular cards | Cards are ordered blocks: text, metrics (grouped tiles or a table, with sparklines) and images. Reorder from the keyboard (⌥⌘↑/↓), the context menu or the inspector. Six templates to start from. |
+| Visually polished | Built like a Pages or Keynote document window: a list, the card itself as the editing canvas, and a Format inspector. The card is typographic: one large title, sentence-case headings, SF Rounded numerals, a single quiet group for metrics. Four themes; PNG export at 1×–3×. |
+| Accessibility-compliant | A built-in **accessibility linter** checks nine WCAG-mapped rules as you type. The toolbar shows the verdict; the inspector's Accessibility tab (⇧⌘K) lists issues and jumps to the block at fault. An image without a description says so on the canvas. Exported HTML is semantic; status is never colour-only; images require alt text. The app itself is VoiceOver- and keyboard-operable and passes the XCTest accessibility audit. |
 | Instantly copy or export | **Copy for Email** (⇧⌘C) puts rich text with images, HTML and plain text on the clipboard at once. Also copy as image, Markdown, Slack format, plain text or HTML source. Export PNG, HTML, Markdown, plain text or JSON. Share sheet (Mail, Messages, AirDrop, Notes). Drag the preview straight into another app. |
-| Responsive | The window reflows from three columns to editor + preview to a single pane with an Edit/Preview switch (minimum 560 pt), and the preview scales the card instead of clipping it. Exported HTML is a responsive page. |
+| Responsive | The window reflows from list + canvas + inspector, to canvas + inspector, to the canvas alone (minimum 480 pt), and the card on the canvas is fluid. Exported HTML is a responsive page. |
 | Deploy on cloud | GitHub Actions publishes the app to **Releases** and a **card gallery to GitHub Pages**, rendered headless by the `reportcard` command-line tool from the same renderers. The Pages build fails if any template stops passing the accessibility linter. |
 | Surprise and delight | Shortcuts action "Create Card from Clipboard"; alt-text suggestions; live WCAG contrast checking of every theme; JSON import/export; `reportcard lint` as an accessibility gate for CI pipelines. |
 
-| Accessibility report behind the badge | The same app in a 600 pt window |
+| Accessibility tab of the inspector | The same app in a 640 pt window, in Dark Mode |
 |---|---|
-| ![Accessibility report popover listing nine passed WCAG checks](docs/assets/accessibility-report.png) | ![Compact layout: card list and a single pane with an Edit/Preview switch](docs/assets/layout-compact.png) |
+| ![Format inspector showing the accessibility verdict and the nine checks](docs/assets/accessibility-report.png) | ![Compact layout: the card alone, fluid to the window width](docs/assets/layout-compact.png) |
 
 ## Quick start
 
@@ -59,32 +59,37 @@ swift run reportcard lint --input card.json --strict    # exit 1 if not accessib
 
 ## Five-minute tour
 
-1. **Pick a template** with the `+` button (or ⌘N for the default).
-2. **Edit** title, subtitle and status at the top of the editor. Theme and
-   preview width live in the *Appearance* menu above the preview.
-3. **Add content**: *Add Block* → Text, Metrics or Image; *Smart Paste* (⇧⌘V);
-   or just drop files onto the editor. A metric is one line: label, value and
-   a change such as `+5%`. Whether the change is good news is inferred from
-   the label ("Open bugs ▼" is good) and flips with a click on the arrow.
-4. **Watch the badge** above the preview. Red means an error (say, an image
-   without alt text). Click it to see the report and jump to the problem.
-5. **Copy for Email** (⇧⌘C) and paste into Mail. Or hold the Copy button for
-   other formats, use Export, or the share sheet.
+1. **New card** with the `+` button (⌘N), or hold it for a template.
+2. **Type on the card.** Click the title, the status, a heading, a number. A
+   line that starts with `- ` becomes a bullet. A metric's change can be typed
+   as `+5%` or `-3`; whether that is good news is inferred from the label
+   ("Open bugs ▼" is good) and can be overridden from the context menu or the
+   inspector.
+3. **Add content** from the toolbar (Text, Metrics, Image), by pasting with
+   ⇧⌘V, which picks the right block for a table, an image or prose, or by
+   dropping files onto the window.
+4. **Format** with the paintbrush: theme, status, author and width for the
+   card; layout and data import for metrics; description for images.
+5. **Check** the shield in the toolbar. If it turns red, the Accessibility tab
+   says what to fix and takes you there.
+6. **Copy for Email** (⇧⌘C) and paste into Mail. Hold the Copy button for other
+   formats and file export, or use the share button.
 
 ## Architecture in one paragraph
 
 `SnippetCard` is a plain value type in the `ReportCore` Swift package (no UI
 frameworks). Every output is a pure function of it: the SwiftUI `CardView`
-(preview and PNG), `HTMLRenderer` (email fragment or standalone page),
+(PNG export; the editable canvas is built from the same pieces), `HTMLRenderer`
+(email fragment or standalone page),
 `AttributedCardRenderer` (RTF/RTFD for Mail and Notes), `MarkdownRenderer`
 (CommonMark and Slack) and `PlainTextRenderer`. The same model feeds the
 accessibility linter, templates, persistence and import/export. The macOS app
-layer adds the editor, pasteboard and share integration, drag and drop,
-Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+layer adds the canvas and inspector, pasteboard and share integration, drag
+and drop, Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```
 ┌──────────────────────────── App (SwiftUI, AppKit) ────────────────────────────┐
-│  Sidebar  │  Editor (blocks, Smart Paste, drop)  │  Preview + accessibility badge │
+│  Card list  │  Canvas: the card, edited in place  │  Format inspector           │
 │  CardStore (persistence)  ·  WorkspaceState  ·  PasteboardWriter  ·  Exporter  │
 └────────────────────────────────────┬──────────────────────────────────────────┘
                                      │ SnippetCard (value type)

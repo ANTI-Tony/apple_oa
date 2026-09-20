@@ -81,7 +81,10 @@ struct HTMLRendererTests {
     @Test("Status is conveyed with text, not colour alone")
     func statusText() {
         let html = HTMLRenderer().render(Fixtures.card(status: .offTrack))
-        #expect(html.contains("Status: Off track"))
+        // Sighted readers see the words next to a coloured indicator; screen
+        // readers hear "Status: Off Track" and never the decorative glyph.
+        #expect(html.contains("<span style=\"\(HTMLRenderer.visuallyHiddenStyle)\">Status: </span>Off Track</p>"))
+        #expect(html.contains("<span aria-hidden=\"true\" style=\"color:#D70015\">■</span>"))
     }
 
     @Test("Empty blocks render nothing")
@@ -106,7 +109,7 @@ struct MarkdownRendererTests {
         #expect(markdown.contains("| Metric | Value | Change |"))
         #expect(markdown.contains("| Velocity | 42 | ▲ 5% |"))
         #expect(markdown.contains("![Burndown chart trending to zero by Friday](image-1.png)"))
-        #expect(markdown.contains("Status: ● On track"))
+        #expect(markdown.contains("Status: ● On Track"))
     }
 
     @Test("Slack flavour uses bold lines instead of headings and tables")
@@ -136,7 +139,7 @@ struct PlainTextRendererTests {
         let lines = text.components(separatedBy: "\n")
         #expect(lines[0] == "WEEKLY STATUS <ATLAS>")
         #expect(lines[1] == "Project Atlas · Week 38")
-        #expect(lines[2] == "Status: On track")
+        #expect(lines[2] == "Status: On Track")
         #expect(text.contains("Velocity: 42 (up 5%, positive)"))
         #expect(text.contains("[Image: Burndown chart trending to zero by Friday]"))
     }
@@ -192,5 +195,20 @@ struct FooterAndHeadingTests {
 
         #expect(HTMLRenderer.Options(baseHeadingLevel: 9).baseHeadingLevel == 5)
         #expect(HTMLRenderer.Options(baseHeadingLevel: 0).baseHeadingLevel == 1)
+    }
+}
+
+@Suite("Line breaks")
+struct LineBreakTests {
+    private let card = SnippetCard(title: "T", blocks: [.text(TextBlock(body: "First line\nSecond <line>\n\nNew paragraph"))])
+
+    @Test("A single newline is a line break in every renderer; a blank line starts a paragraph")
+    func lineBreaks() {
+        let html = HTMLRenderer().render(card)
+        #expect(html.contains(">First line<br>Second &lt;line&gt;</p>"))
+        #expect(html.contains(">New paragraph</p>"))
+        #expect(MarkdownRenderer(includeFooter: false).render(card).contains("First line  \nSecond <line>\n\nNew paragraph"))
+        #expect(MarkdownRenderer(flavor: .slack, includeFooter: false).render(card).contains("First line\nSecond <line>"))
+        #expect(PlainTextRenderer(includeFooter: false).render(card).contains("First line\nSecond <line>\nNew paragraph"))
     }
 }

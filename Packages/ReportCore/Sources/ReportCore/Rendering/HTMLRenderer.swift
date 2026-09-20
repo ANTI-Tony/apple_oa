@@ -10,9 +10,11 @@ import Foundation
 ///   viewport meta tag and a small responsive stylesheet, for saving to disk
 ///   or hosting.
 ///
-/// The markup is semantic on purpose: headings, lists, `<table>` with header
-/// scopes, `<figure>`/`<figcaption>`, and visually hidden text for change
-/// directions, so the exported card is accessible wherever it lands.
+/// The look is typographic rather than decorative: one large title, sentence
+/// headings, a single quiet group for metrics with hairline dividers. The
+/// markup is semantic on purpose: headings, lists, `<table>` with header
+/// scopes, `<figure>`/`<figcaption>`, and visually hidden text for status and
+/// change directions, so the exported card is accessible wherever it lands.
 public struct HTMLRenderer: Sendable {
     public struct Options: Sendable {
         public enum Mode: Sendable {
@@ -80,6 +82,15 @@ public struct HTMLRenderer: Sendable {
         }
     }
 
+    /// Inline-styled equivalent of the common `.sr-only` class. Works in
+    /// email clients that drop stylesheets.
+    public static let visuallyHiddenStyle =
+        "position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
+
+    /// Rounded numerals for metric values where the font is available
+    /// (Apple Mail, Safari), falling back to the theme's stack elsewhere.
+    static let roundedFontPrefix = "ui-rounded, 'SF Pro Rounded', "
+
     // MARK: Article
 
     private func renderArticle(_ card: SnippetCard) -> String {
@@ -87,9 +98,9 @@ public struct HTMLRenderer: Sendable {
         var html = ""
         let articleStyle = [
             "max-width:\(options.maxWidth)px", "margin:0 auto", "font-family:\(theme.fontFamily)",
-            "font-size:15px", "line-height:1.5", "color:\(theme.text.hexString)",
+            "font-size:15px", "line-height:1.47", "color:\(theme.text.hexString)",
             "background:\(theme.background.hexString)", "border:1px solid \(theme.border.hexString)",
-            "border-radius:\(Int(theme.cornerRadius))px", "padding:24px", "box-sizing:border-box",
+            "border-radius:\(Int(theme.cornerRadius))px", "padding:28px", "box-sizing:border-box",
         ].joined(separator: ";")
         html += "<article lang=\"\(options.language.htmlEscaped)\" class=\"card\" style=\"\(articleStyle)\">\n"
         html += renderHeader(card)
@@ -112,27 +123,23 @@ public struct HTMLRenderer: Sendable {
         let theme = card.theme
         var html = "<header>\n"
         if !card.subtitle.isEmpty {
-            html += "<p style=\"margin:0 0 4px;font-size:13px;color:\(theme.secondaryText.hexString)\">"
+            html += "<p style=\"margin:0 0 6px;font-size:13px;color:\(theme.secondaryText.hexString)\">"
                 + "\(card.subtitle.htmlEscaped)</p>\n"
         }
         let titleTag = "h\(options.baseHeadingLevel)"
-        html += "<\(titleTag) style=\"margin:0 0 10px;font-size:22px;line-height:1.25;font-weight:700;"
-            + "color:\(theme.text.hexString)\">\(card.title.htmlEscaped)</\(titleTag)>\n"
-        let colors = theme.statusColors(for: card.status)
-        let pillStyle = [
-            "display:inline-block", "padding:3px 10px", "border-radius:999px", "font-size:12px", "font-weight:600",
-            "background:\(colors.background.hexString)", "color:\(colors.foreground.hexString)",
-        ].joined(separator: ";")
-        html += "<p style=\"margin:0 0 18px\"><span style=\"\(pillStyle)\">"
-            + "<span aria-hidden=\"true\">\(card.status.glyph)</span> Status: \(card.status.label.htmlEscaped)</span></p>\n"
+        html += "<\(titleTag) style=\"margin:0 0 10px;font-size:28px;line-height:1.15;font-weight:700;"
+            + "letter-spacing:-0.01em;color:\(theme.text.hexString)\">\(card.title.htmlEscaped)</\(titleTag)>\n"
+        // The indicator is decorative; the words carry the status.
+        html += "<p style=\"margin:0;font-size:13px;font-weight:500;color:\(theme.text.hexString)\">"
+            + "<span aria-hidden=\"true\" style=\"color:\(theme.statusColor(for: card.status).hexString)\">\(card.status.glyph)</span> "
+            + "<span style=\"\(Self.visuallyHiddenStyle)\">Status: </span>\(card.status.label.htmlEscaped)</p>\n"
         html += "</header>\n"
         return html
     }
 
     private func sectionHeading(_ text: String, theme: CardTheme, id: String) -> String {
         guard !text.isEmpty else { return "" }
-        let style = "margin:18px 0 8px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;"
-            + "color:\(theme.secondaryText.hexString)"
+        let style = "margin:0 0 8px;font-size:15px;line-height:1.3;font-weight:600;color:\(theme.text.hexString)"
         let tag = "h\(options.baseHeadingLevel + 1)"
         return "<\(tag) id=\"\(id)\" style=\"\(style)\">\(text.htmlEscaped)</\(tag)>\n"
     }
@@ -140,7 +147,7 @@ public struct HTMLRenderer: Sendable {
     private func sectionOpen(heading: String, id: UUID) -> String {
         let headingID = "h-\(id.uuidString.prefix(8).lowercased())"
         let labelled = heading.isEmpty ? "" : " aria-labelledby=\"\(headingID)\""
-        return "<section\(labelled)>\n"
+        return "<section\(labelled) style=\"margin:22px 0 0\">\n"
     }
 
     private func renderText(_ block: TextBlock, theme: CardTheme) -> String {
@@ -148,12 +155,15 @@ public struct HTMLRenderer: Sendable {
         let headingID = "h-\(block.id.uuidString.prefix(8).lowercased())"
         var html = sectionOpen(heading: block.heading, id: block.id)
         html += sectionHeading(block.heading, theme: theme, id: headingID)
-        for fragment in block.fragments {
+        let fragments = block.fragments
+        for (index, fragment) in fragments.enumerated() {
+            let bottom = index == fragments.count - 1 ? "0" : "10px"
             switch fragment {
             case let .paragraph(text):
-                html += "<p style=\"margin:0 0 10px\">\(text.htmlEscaped)</p>\n"
+                let lines = text.htmlEscaped.replacingOccurrences(of: "\n", with: "<br>")
+                html += "<p style=\"margin:0 0 \(bottom)\">\(lines)</p>\n"
             case let .bullets(items):
-                html += "<ul style=\"margin:0 0 10px;padding-left:22px\">\n"
+                html += "<ul style=\"margin:0 0 \(bottom);padding-left:20px\">\n"
                 for item in items {
                     html += "<li style=\"margin:0 0 4px\">\(item.htmlEscaped)</li>\n"
                 }
@@ -180,36 +190,41 @@ public struct HTMLRenderer: Sendable {
     private func changeMarkup(_ change: MetricChange, theme: CardTheme, fontSize: Int = 12) -> String {
         let color = theme.changeColor(for: change.sentiment).hexString
         let visible = change.text.isEmpty ? "" : " \(change.text.htmlEscaped)"
-        return "<span style=\"font-size:\(fontSize)px;font-weight:600;color:\(color)\">"
+        return "<span style=\"font-size:\(fontSize)px;font-weight:500;color:\(color)\">"
             + "<span aria-hidden=\"true\">\(change.direction.glyph)\(visible)</span>"
             + "<span style=\"\(Self.visuallyHiddenStyle)\">\(change.accessibleDescription.htmlEscaped)</span></span>"
     }
 
+    /// One quiet group: a single tinted surface, metrics separated by hairlines.
     private func renderTiles(_ metrics: [Metric], theme: CardTheme) -> String {
         let perRow = metrics.count == 4 ? 2 : min(3, max(metrics.count, 1))
-        var html = "<table role=\"presentation\" "
-            + "style=\"width:100%;border-collapse:separate;border-spacing:0 8px;margin:0 0 6px\">\n"
+        let divider = "1px solid \(theme.border.hexString)"
+        var html = "<table role=\"presentation\" style=\"width:100%;border-collapse:separate;border-spacing:0;"
+            + "background:\(theme.surface.hexString);border-radius:12px\">\n"
         for rowStart in stride(from: 0, to: metrics.count, by: perRow) {
             html += "<tr>\n"
             let row = metrics[rowStart ..< min(rowStart + perRow, metrics.count)]
             for (offset, metric) in row.enumerated() {
-                let gap = offset == row.count - 1 ? "0" : "8px"
-                let tileStyle = [
-                    "vertical-align:top", "width:\(100 / perRow)%", "background:\(theme.surface.hexString)",
-                    "border:1px solid \(theme.border.hexString)", "border-radius:10px", "padding:12px 14px",
-                ].joined(separator: ";")
-                html += "<td class=\"tile\" style=\"\(tileStyle)\" width=\"\(100 / perRow)%\">\n"
+                var tileStyle = ["vertical-align:top", "width:\(100 / perRow)%", "padding:14px 16px"]
+                if offset > 0 {
+                    tileStyle.append("border-left:\(divider)")
+                }
+                if rowStart > 0 {
+                    tileStyle.append("border-top:\(divider)")
+                }
+                html += "<td class=\"tile\" style=\"\(tileStyle.joined(separator: ";"))\" width=\"\(100 / perRow)%\">\n"
                 html += "<p style=\"margin:0;font-size:12px;color:\(theme.secondaryText.hexString)\">"
                     + "\(metric.label.htmlEscaped)</p>\n"
-                html += "<p style=\"margin:2px 0 0;font-size:24px;font-weight:700;line-height:1.2;color:\(theme.text.hexString)\">"
-                    + "\(metric.value.htmlEscaped)</p>\n"
+                html += "<p style=\"margin:2px 0 0;font-family:\(Self.roundedFontPrefix)\(theme.fontFamily);font-size:28px;"
+                    + "font-weight:600;line-height:1.15;color:\(theme.text.hexString)\">\(metric.value.htmlEscaped)</p>\n"
                 if let change = metric.change {
                     html += "<p style=\"margin:4px 0 0\">\(changeMarkup(change, theme: theme))</p>\n"
                 }
                 html += "</td>\n"
-                if gap != "0" {
-                    html += "<td style=\"width:8px;padding:0\" aria-hidden=\"true\"></td>\n"
-                }
+            }
+            // Keep the grid rectangular so dividers line up on a short last row.
+            for _ in row.count ..< perRow {
+                html += "<td style=\"border-top:\(divider)\" aria-hidden=\"true\"></td>\n"
             }
             html += "</tr>\n"
         }
@@ -219,21 +234,24 @@ public struct HTMLRenderer: Sendable {
 
     private func renderTable(_ block: MetricsBlock, theme: CardTheme) -> String {
         let hasChange = block.metrics.contains { $0.change != nil }
-        let cell = "padding:8px 10px;border-bottom:1px solid \(theme.border.hexString);text-align:left;vertical-align:top"
-        var html = "<table style=\"width:100%;border-collapse:collapse;margin:0 0 10px;font-size:14px\">\n"
+        let divider = "1px solid \(theme.border.hexString)"
+        let head = "padding:0 0 6px;border-bottom:\(divider);font-size:12px;font-weight:400;"
+            + "color:\(theme.secondaryText.hexString)"
+        let cell = "padding:9px 0;border-bottom:\(divider);vertical-align:top"
+        var html = "<table style=\"width:100%;border-collapse:collapse;font-size:15px\">\n"
         html += "<thead><tr>"
-        html += "<th scope=\"col\" style=\"\(cell);font-size:12px;color:\(theme.secondaryText.hexString)\">Metric</th>"
-        html += "<th scope=\"col\" style=\"\(cell);font-size:12px;color:\(theme.secondaryText.hexString)\">Value</th>"
+        html += "<th scope=\"col\" style=\"\(head);text-align:left\">Metric</th>"
+        html += "<th scope=\"col\" style=\"\(head);text-align:right\">Value</th>"
         if hasChange {
-            html += "<th scope=\"col\" style=\"\(cell);font-size:12px;color:\(theme.secondaryText.hexString)\">Change</th>"
+            html += "<th scope=\"col\" style=\"\(head);text-align:right\">Change</th>"
         }
         html += "</tr></thead>\n<tbody>\n"
         for metric in block.metrics {
             html += "<tr>"
-            html += "<th scope=\"row\" style=\"\(cell);font-weight:600\">\(metric.label.htmlEscaped)</th>"
-            html += "<td style=\"\(cell)\">\(metric.value.htmlEscaped)</td>"
+            html += "<th scope=\"row\" style=\"\(cell);text-align:left;font-weight:400\">\(metric.label.htmlEscaped)</th>"
+            html += "<td style=\"\(cell);text-align:right;font-weight:600\">\(metric.value.htmlEscaped)</td>"
             if hasChange {
-                html += "<td style=\"\(cell)\">"
+                html += "<td style=\"\(cell);text-align:right;white-space:nowrap\">"
                 if let change = metric.change {
                     html += changeMarkup(change, theme: theme, fontSize: 13)
                 }
@@ -255,11 +273,11 @@ public struct HTMLRenderer: Sendable {
         if let size = block.pixelSize {
             attributes += " width=\"\(size.width)\" height=\"\(size.height)\""
         }
-        var html = "<figure style=\"margin:14px 0\">\n"
-        html += "<img \(attributes) style=\"display:block;max-width:100%;height:auto;border-radius:8px;"
+        var html = "<figure style=\"margin:22px 0 0\">\n"
+        html += "<img \(attributes) style=\"display:block;max-width:100%;height:auto;border-radius:10px;"
             + "border:1px solid \(theme.border.hexString)\">\n"
         if !block.caption.isEmpty {
-            html += "<figcaption style=\"margin:6px 0 0;font-size:13px;color:\(theme.secondaryText.hexString)\">"
+            html += "<figcaption style=\"margin:8px 0 0;font-size:12px;color:\(theme.secondaryText.hexString)\">"
                 + "\(block.caption.htmlEscaped)</figcaption>\n"
         }
         html += "</figure>\n"
@@ -268,12 +286,12 @@ public struct HTMLRenderer: Sendable {
 
     private func renderFooter(_ card: SnippetCard) -> String {
         let text = CardDateFormatting.footerText(for: card, locale: options.locale)
-        return "<footer><p style=\"margin:18px 0 0;font-size:11px;color:\(card.theme.secondaryText.hexString)\">"
+        return "<footer><p style=\"margin:24px 0 0;font-size:11px;color:\(card.theme.secondaryText.hexString)\">"
             + "\(text.htmlEscaped)</p></footer>\n"
     }
 
     private func wrapDocument(_ body: String, card: SnippetCard) -> String {
-        let pageBackground = card.theme.isDark ? "#0B0B0C" : "#F2F2F5"
+        let pageBackground = card.theme.isDark ? "#000000" : "#F5F5F7"
         return """
         <!doctype html>
         <html lang="\(options.language.htmlEscaped)">
@@ -282,11 +300,15 @@ public struct HTMLRenderer: Sendable {
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>\(card.title.htmlEscaped)</title>
         <style>
-        body { margin: 0; padding: 16px; background: \(pageBackground); -webkit-text-size-adjust: 100%; }
+        body { margin: 0; padding: 24px 16px; background: \(pageBackground); -webkit-text-size-adjust: 100%;
+               -webkit-font-smoothing: antialiased; }
         img { max-width: 100%; height: auto; }
         @media (max-width: 480px) {
-          .card { padding: 16px !important; }
-          .card td.tile { display: block; width: auto !important; margin-bottom: 8px; }
+          body { padding: 12px 8px; }
+          .card { padding: 20px !important; }
+          .card td.tile { display: block; width: auto !important; border-left: none !important;
+                          border-top: 1px solid \(card.theme.border.hexString); }
+          .card tr:first-child td.tile:first-child { border-top: none; }
         }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
         </style>
@@ -299,9 +321,4 @@ public struct HTMLRenderer: Sendable {
         </html>
         """
     }
-
-    /// Inline-styled equivalent of the common `.sr-only` class. Works in
-    /// email clients that drop stylesheets.
-    public static let visuallyHiddenStyle =
-        "position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
 }

@@ -50,7 +50,7 @@ enum SampleContent {
     static func risks() -> SnippetCard {
         var card = CardTemplate.risks.makeCard()
         card.subtitle = "Project Atlas"
-        card.theme = .ocean
+        card.theme = .paper
         return card
     }
 

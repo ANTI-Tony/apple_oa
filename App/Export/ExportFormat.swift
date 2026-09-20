@@ -48,6 +48,8 @@ enum ExportFormat: String, CaseIterable, Identifiable {
 struct ExportPreferences: Sendable {
     var scale: Int = 2
     var includeFooter: Bool = true
+    /// Card width in points, for the PNG and the HTML max-width.
+    var width: CGFloat = 600
 }
 
 enum ExportError: LocalizedError {

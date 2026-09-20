@@ -99,7 +99,9 @@ struct ExportTests {
         let attributed = AttributedCardRenderer().render(card)
         let text = attributed.string
         #expect(text.contains("Weekly status"))
-        #expect(text.contains("Status: On track"))
+        #expect(text.contains("● On Track"))
+        #expect(!text.contains("HIGHLIGHTS"), "headings keep their case")
+        #expect(text.contains("Highlights"))
         #expect(text.contains("Velocity"))
         #expect(text.contains("\u{FFFC}"), "image attachment present")
         var hasTable = false

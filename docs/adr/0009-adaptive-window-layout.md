@@ -13,19 +13,21 @@ The main window reflows at two breakpoints (`WindowLayout`):
 
 | Width | Layout |
 |---|---|
-| ≥ 1100 | sidebar · editor · preview |
-| 760–1099 | editor · preview, sidebar collapsed (toolbar button restores it) |
-| < 760 (minimum 560) | one pane, with an Edit / Preview switch in the toolbar |
+| ≥ 1080 | card list · canvas · Format inspector |
+| 780–1079 | canvas · inspector, list collapsed (toolbar button restores it) |
+| < 780 (minimum 480) | canvas only; the inspector is one toolbar click away |
 
-The preview always scales the card to the column instead of clipping it, and
-states the scale ("64%"). Layout changes happen only when a breakpoint is
-crossed, so a sidebar reopened by hand is respected while resizing.
+The card on the canvas is fluid, so it reflows to the space it has instead of
+being clipped. Layout changes happen only when a breakpoint is crossed, so a
+list or inspector reopened by hand is respected while resizing. (The first
+version of this ADR described an editor/preview pair with an Edit/Preview
+switch; ADR 0010 replaced that pair with a single canvas.)
 
 ## Consequences
 
 - Breakpoints sit above the sum of the minimum column widths of the wider
   layout, otherwise the window could never shrink far enough to trigger them.
-- In the compact layout the detail column hosts either pane; the hidden
-  content column still exists, which keeps a single `NavigationSplitView` and
-  avoids rebuilding state when crossing breakpoints.
+- The window width is read from a `GeometryReader` around the split view. The
+  split view's own width is useless for this: it never reports less than the
+  minimum of its visible columns, which hides exactly the case to react to.
 - `-windowSize WxH -uiTesting` lets UI tests and screenshots pin each layout.

@@ -14,4 +14,5 @@ made that a future reader might reasonably question.
 | [0006](0006-xcodegen-and-xcconfig.md) | XcodeGen project generation and xcconfig configuration | Accepted |
 | [0007](0007-swift-6-strict-concurrency.md) | Swift 6 language mode with strict concurrency | Accepted |
 | [0008](0008-headless-cli-and-static-gallery.md) | Headless CLI and static gallery as the first cloud surface | Accepted |
-| [0009](0009-adaptive-window-layout.md) | Adaptive window layout | Accepted |
+| [0009](0009-adaptive-window-layout.md) | Adaptive window layout | Accepted, breakpoints revised by 0010 |
+| [0010](0010-canvas-and-inspector.md) | Canvas and inspector instead of form and preview | Accepted |

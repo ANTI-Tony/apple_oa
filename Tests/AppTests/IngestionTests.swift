@@ -142,11 +142,46 @@ struct WindowLayoutTests {
         #expect(WindowLayout.forWidth(WindowLayout.minimumWindowWidth) == .compact)
     }
 
-    @Test("Each layout shows the intended columns")
-    func columns() {
+    @Test("Each layout shows the intended parts")
+    func parts() {
         #expect(WindowLayout.wide.columnVisibility == .all)
-        #expect(WindowLayout.medium.columnVisibility == .doubleColumn)
+        #expect(WindowLayout.medium.columnVisibility == .detailOnly)
         #expect(WindowLayout.compact.columnVisibility == .detailOnly)
+        #expect(WindowLayout.wide.allowsInspector)
+        #expect(WindowLayout.medium.allowsInspector)
+        #expect(!WindowLayout.compact.allowsInspector)
+    }
+
+    @Test("Launch overrides need -uiTesting and well-formed values")
+    func launchOverrides() {
+        let arguments = ["app", "-windowSize", "700x640", "-inspectorTab", "accessibility", "-uiTesting"]
+        #expect(LaunchOverrides.windowSize(in: arguments) == CGSize(width: 700, height: 640))
+        #expect(LaunchOverrides.inspectorTab(in: arguments) == .accessibility)
+        #expect(LaunchOverrides.windowSize(in: ["app", "-windowSize", "700x640"]) == nil, "ignored outside UI testing")
+        #expect(LaunchOverrides.windowSize(in: ["app", "-windowSize", "wide", "-uiTesting"]) == nil)
+        #expect(LaunchOverrides.inspectorTab(in: ["app", "-inspectorTab", "nope", "-uiTesting"]) == nil)
+    }
+
+    @Test("Typing a dash or asterisk makes a bullet, as in Notes")
+    func bullets() {
+        #expect(EditableTextBlock.bulleted("- one\n* two\nthree\n• four") == "• one\n• two\nthree\n• four")
+        #expect(EditableTextBlock.bulleted("a - b") == "a - b")
+    }
+
+    @Test("Change text typed on the card updates the metric without fighting partial input")
+    @MainActor
+    func changeText() {
+        var metric = Metric(label: "Open bugs", value: "12")
+        ChangeTextSync.apply("+", to: &metric)
+        #expect(metric.change == nil, "a lone sign is not a change yet")
+        ChangeTextSync.apply("-3", to: &metric)
+        #expect(metric.change == MetricChange(direction: .down, sentiment: .positive, text: "3"))
+        #expect(ChangeTextSync.display(metric.change) == "▼ 3")
+        metric.change?.sentiment = .negative
+        ChangeTextSync.apply("-4", to: &metric)
+        #expect(metric.change?.sentiment == .negative, "a sentiment set by hand survives editing the amount")
+        ChangeTextSync.apply("  ", to: &metric)
+        #expect(metric.change == nil)
     }
 
     @Test("New cards carry the author from preferences")

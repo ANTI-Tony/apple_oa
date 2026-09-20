@@ -59,7 +59,10 @@ public struct MarkdownRenderer: Sendable {
         }
         for fragment in block.fragments {
             switch fragment {
-            case let .paragraph(text): lines.append(text.markdownEscaped)
+            case let .paragraph(text):
+                // Two trailing spaces force a line break in CommonMark; Slack breaks on a bare newline.
+                let separator = flavor == .slack ? "\n" : "  \n"
+                lines.append(text.components(separatedBy: "\n").map(\.markdownEscaped).joined(separator: separator))
             case let .bullets(items):
                 let bullet = flavor == .slack ? "•" : "-"
                 lines += items.map { "\(bullet) \($0.markdownEscaped)" }

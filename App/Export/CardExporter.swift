@@ -30,6 +30,7 @@ enum CardExporter {
         case .png:
             guard let data = pngData(
                 for: card,
+                width: preferences.width,
                 scale: CGFloat(preferences.scale),
                 includeFooter: preferences.includeFooter
             ) else {
@@ -39,6 +40,7 @@ enum CardExporter {
         case .html:
             var options = HTMLRenderer.Options.standalone
             options.includeFooter = preferences.includeFooter
+            options.maxWidth = Int(preferences.width)
             return Data(HTMLRenderer(options: options).render(card).utf8)
         case .markdown:
             return Data(MarkdownRenderer(includeFooter: preferences.includeFooter).render(card).utf8)

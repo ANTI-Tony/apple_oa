@@ -18,31 +18,32 @@ final class ReportingBuilderUITests: XCTestCase {
     }
 
     @MainActor
-    func testCompactWindowOffersEditPreviewSwitch() {
-        let app = launchApp(windowSize: "640x640")
-        let paneSwitch = app.descendants(matching: .any)["layout.paneSwitch"]
-        XCTAssertTrue(paneSwitch.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 5), "compact layout opens on the editor")
-        paneSwitch.radioButtons["Preview"].click()
-        XCTAssertTrue(app.buttons["preview.accessibilityBadge"].waitForExistence(timeout: 5))
+    private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)[identifier]
     }
 
     @MainActor
-    func testWideWindowHasNoPaneSwitch() {
-        let app = launchApp(windowSize: "1400x860")
-        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.descendants(matching: .any)["layout.paneSwitch"].exists)
-    }
-
-    @MainActor
-    func testLaunchShowsSeededCardInEditorAndPreview() {
+    func testLaunchShowsSeededCardEditableOnTheCanvas() {
         let app = launchApp()
         let title = app.textFields["editor.title"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
         XCTAssertEqual(title.value as? String, "Weekly status")
-        let badge = app.buttons["preview.accessibilityBadge"]
-        XCTAssertTrue(badge.waitForExistence(timeout: 5))
-        XCTAssertTrue(badge.label.contains("AA ready"), "badge label was: \(badge.label)")
+        let status = element("toolbar.accessibility", in: app)
+        XCTAssertTrue(status.waitForExistence(timeout: 5))
+        XCTAssertTrue(status.label.hasPrefix("Accessible"), "toolbar status was: \(status.label)")
+    }
+
+    @MainActor
+    func testTypingOnTheCardRenamesIt() {
+        let app = launchApp()
+        let title = app.textFields["editor.title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 10))
+        title.click()
+        app.typeKey("a", modifierFlags: .command)
+        title.typeText("Quarterly review")
+        let renamed = NSPredicate(format: "value == %@", "Quarterly review")
+        expectation(for: renamed, evaluatedWith: title)
+        waitForExpectations(timeout: 5)
     }
 
     @MainActor
@@ -60,21 +61,34 @@ final class ReportingBuilderUITests: XCTestCase {
     }
 
     @MainActor
-    func testAddTextBlockFromEditor() {
+    func testAddingTextSelectsTheNewBlock() {
         let app = launchApp()
         XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
-        let addBlock = app.descendants(matching: .any)["editor.addBlock"]
-        XCTAssertTrue(addBlock.waitForExistence(timeout: 5))
-        let blocksBefore = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'Text block'")).count
-        addBlock.click()
-        let textItem = app.menuItems["Text"]
-        XCTAssertTrue(textItem.waitForExistence(timeout: 5))
-        textItem.click()
-        let predicate = NSPredicate(format: "label BEGINSWITH 'Text block'")
-        let query = app.descendants(matching: .any).matching(predicate)
-        let grew = NSPredicate { _, _ in query.count > blocksBefore }
-        expectation(for: grew, evaluatedWith: nil)
+        let selected = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Text block, selected'"))
+        XCTAssertEqual(selected.count, 0)
+        let addText = element("canvas.addText", in: app)
+        XCTAssertTrue(addText.waitForExistence(timeout: 5))
+        addText.click()
+        let appeared = NSPredicate { _, _ in selected.count == 1 }
+        expectation(for: appeared, evaluatedWith: nil)
         waitForExpectations(timeout: 5)
+    }
+
+    @MainActor
+    func testInspectorShowsTheAccessibilityCheck() {
+        let app = launchApp(windowSize: "1400x860")
+        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
+        element("toolbar.accessibility", in: app).click()
+        XCTAssertTrue(element("inspector.accessibilityVerdict", in: app).waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testCompactWindowHidesTheInspectorUntilAsked() {
+        let app = launchApp(windowSize: "640x700")
+        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
+        XCTAssertFalse(element("inspector.tabs", in: app).exists)
+        element("toolbar.format", in: app).click()
+        XCTAssertTrue(element("inspector.tabs", in: app).waitForExistence(timeout: 5))
     }
 
     @MainActor
@@ -82,8 +96,7 @@ final class ReportingBuilderUITests: XCTestCase {
         let app = launchApp()
         XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
         app.typeKey("c", modifierFlags: [.command, .shift])
-        let banner = app.descendants(matching: .any)["notice.banner"]
-        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+        XCTAssertTrue(element("notice.banner", in: app).waitForExistence(timeout: 5))
         let types = Set(NSPasteboard.general.types ?? [])
         XCTAssertTrue(types.contains(.html), "types: \(types)")
         XCTAssertTrue(types.contains(.rtfd), "types: \(types)")

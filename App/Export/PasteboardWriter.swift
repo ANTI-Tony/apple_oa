@@ -66,6 +66,7 @@ enum PasteboardWriter {
         case .rich:
             var options = HTMLRenderer.Options.email
             options.includeFooter = preferences.includeFooter
+            options.maxWidth = Int(preferences.width)
             let html = HTMLRenderer(options: options).render(card)
             let plain = PlainTextRenderer(includeFooter: preferences.includeFooter).render(card)
             let attributed = AttributedCardRenderer(includeFooter: preferences.includeFooter).render(card)
@@ -84,6 +85,7 @@ enum PasteboardWriter {
         case .image:
             guard let png = CardExporter.pngData(
                 for: card,
+                width: preferences.width,
                 scale: CGFloat(preferences.scale),
                 includeFooter: preferences.includeFooter
             ),

@@ -21,7 +21,7 @@ public enum AccessibilityRule: String, CaseIterable, Sendable {
         case .textContrast: "Body text contrast is at least 4.5:1"
         case .secondaryTextContrast: "Secondary text contrast is at least 4.5:1"
         case .accentContrast: "Accent contrast is at least 3:1"
-        case .statusContrast: "Status label contrast is at least 4.5:1"
+        case .statusContrast: "Status indicator contrast is at least 3:1"
         case .metricsHaveLabels: "Every metric has a label"
         case .blocksHaveContent: "No empty blocks"
         }
@@ -32,8 +32,8 @@ public enum AccessibilityRule: String, CaseIterable, Sendable {
         case .cardHasTitle: "WCAG 2.4.6 Headings and Labels"
         case .imagesHaveAltText: "WCAG 1.1.1 Non-text Content"
         case .altTextIsMeaningful: "WCAG 1.1.1 Non-text Content"
-        case .textContrast, .secondaryTextContrast, .statusContrast: "WCAG 1.4.3 Contrast (Minimum)"
-        case .accentContrast: "WCAG 1.4.11 Non-text Contrast"
+        case .textContrast, .secondaryTextContrast: "WCAG 1.4.3 Contrast (Minimum)"
+        case .accentContrast, .statusContrast: "WCAG 1.4.11 Non-text Contrast"
         case .metricsHaveLabels: "WCAG 1.3.1 Info and Relationships"
         case .blocksHaveContent: "Best practice"
         }
@@ -191,14 +191,13 @@ public enum AccessibilityLinter {
             ),
         ]
         for status in ReportStatus.allCases {
-            let pair = theme.statusColors(for: status)
             checks.append(ContrastCheck(
                 rule: .statusContrast,
-                severity: .error,
-                foreground: pair.foreground,
-                background: pair.background,
-                minimum: ContrastLevel.aaNormalText,
-                subject: "\"\(status.label)\" status label"
+                severity: .warning,
+                foreground: theme.statusColor(for: status),
+                background: theme.background,
+                minimum: ContrastLevel.aaLargeText,
+                subject: "\"\(status.label)\" status indicator"
             ))
         }
         for sentiment in MetricChange.Sentiment.allCases {

@@ -1,7 +1,8 @@
 import ReportCore
 import SwiftUI
 
-/// Sidebar list of cards with search, context actions and delete-key support.
+/// The card list: title, context line and a small status dot, like a Notes or
+/// Reminders sidebar. Search, context actions and the Delete key all work.
 struct CardListView: View {
     @Environment(CardStore.self) private var store
     @Environment(WorkspaceState.self) private var workspace
@@ -28,7 +29,7 @@ struct CardListView: View {
             }
         }
         .listStyle(.sidebar)
-        .searchable(text: $searchText, placement: .sidebar, prompt: "Search cards")
+        .searchable(text: $searchText, placement: .sidebar, prompt: "Search")
         .navigationTitle("Cards")
         .onDeleteCommand {
             if let id = store.selectedCardID {
@@ -39,11 +40,7 @@ struct CardListView: View {
         .accessibilityIdentifier("sidebar.cards")
         .overlay {
             if store.cards.isEmpty {
-                ContentUnavailableView(
-                    "No cards",
-                    systemImage: "rectangle.stack",
-                    description: Text("Create one with ⌘N.")
-                )
+                ContentUnavailableView("No Cards", systemImage: "rectangle.stack", description: Text("Press ⌘N to create one."))
             }
         }
     }
@@ -52,24 +49,30 @@ struct CardListView: View {
 private struct CardRow: View {
     let card: SnippetCard
 
+    private var detail: String {
+        let date = card.updatedAt.formatted(.dateTime.month(.abbreviated).day())
+        return card.subtitle.isEmpty ? date : "\(date)  \(card.subtitle)"
+    }
+
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: card.status.symbolName)
-                .foregroundStyle(card.status.tint)
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Circle()
+                .fill(card.status.tint)
+                .frame(width: 8, height: 8)
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 1 }
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(card.title.isEmpty ? "Untitled" : card.title)
+                    .fontWeight(.medium)
                     .lineLimit(1)
-                if !card.subtitle.isEmpty {
-                    Text(card.subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                Text(detail)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
         }
-        .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(card.title.isEmpty ? "Untitled" : card.title), \(card.status.label)")
+        .padding(.vertical, 3)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(card.title.isEmpty ? "Untitled" : card.title), \(card.status.label), updated \(detail)")
     }
 }

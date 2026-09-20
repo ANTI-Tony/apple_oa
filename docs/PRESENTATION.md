@@ -4,7 +4,7 @@
 |---|---|---|
 | 0–1 | Title | Reporting Builder: raw inputs → accessible Snippet Cards → any channel. Native macOS, Swift 6, no backend. |
 | 1–2 | The user and the pain | A program manager assembles the same update for Mail, Slack and a wiki every week, re-formatting each time, and accessibility is an afterthought. |
-| 2–5 | **Live demo** | Template → paste a spreadsheet range → metrics with change arrows → drop a screenshot → badge turns red → click it, jump to the block, add alt text → green → ⇧⌘C → paste into Mail → paste into Slack → share sheet. |
+| 2–5 | **Live demo** | Template → type on the card → ⇧⌘V a spreadsheet range, metrics appear with change arrows → drop a screenshot → toolbar shield turns red, "Add Description" on the image → describe it in the inspector → clear → ⇧⌘C → paste into Mail → paste into Slack → share sheet. |
 | 5–7 | Design principle 1: one model, many renderers | Diagram. Why the preview, PNG and email can't disagree. Tiny markup subset on purpose. |
 | 7–9 | Design principle 2: accessibility as a feature | Linter rules mapped to WCAG, tested themes/templates, exported HTML semantics, VoiceOver demo (30 s). |
 | 9–10 | Design principle 3: meet each channel where it is | Pasteboard representation strategy, compatibility matrix, honest "expected vs verified". |

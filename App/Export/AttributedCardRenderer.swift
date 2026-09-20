@@ -17,21 +17,27 @@ struct AttributedCardRenderer {
     func render(_ card: SnippetCard) -> NSAttributedString {
         let output = NSMutableAttributedString()
         if !card.subtitle.isEmpty {
-            output.append(paragraph(card.subtitle, font: .systemFont(ofSize: 12), color: palette.secondaryText.nsColor, spacingAfter: 2))
+            output.append(paragraph(card.subtitle, font: .systemFont(ofSize: 12), color: palette.secondaryText.nsColor, spacingAfter: 3))
         }
         output.append(paragraph(
             card.title.isEmpty ? "Untitled" : card.title,
-            font: .boldSystemFont(ofSize: 20),
+            font: .boldSystemFont(ofSize: 24),
             color: palette.text.nsColor,
             spacingAfter: 6
         ))
-        let statusColors = palette.statusColors(for: card.status)
-        output.append(paragraph(
-            "\(card.status.glyph) Status: \(card.status.label)",
-            font: .boldSystemFont(ofSize: 12),
-            color: statusColors.foreground.nsColor,
-            spacingAfter: 12
+        // A coloured indicator followed by the words, as on the card.
+        let status = NSMutableAttributedString(attributedString: paragraph(
+            "\(card.status.glyph) \(card.status.label)",
+            font: .systemFont(ofSize: 12, weight: .medium),
+            color: palette.text.nsColor,
+            spacingAfter: 14
         ))
+        status.addAttribute(
+            .foregroundColor,
+            value: palette.statusColor(for: card.status).nsColor,
+            range: NSRange(location: 0, length: (card.status.glyph as NSString).length)
+        )
+        output.append(status)
         for block in card.blocks {
             switch block {
             case let .text(text): appendText(text, to: output)
@@ -76,9 +82,9 @@ struct AttributedCardRenderer {
 
     private func sectionHeading(_ text: String) -> NSAttributedString {
         paragraph(
-            text.uppercased(),
-            font: .boldSystemFont(ofSize: 11),
-            color: palette.secondaryText.nsColor,
+            text,
+            font: .systemFont(ofSize: 14, weight: .semibold),
+            color: palette.text.nsColor,
             spacingBefore: 10,
             spacingAfter: 4
         )

@@ -89,7 +89,7 @@ struct CLITests {
         #expect(code == 0)
         #expect(sink.text == "Wrote \(out)")
         let html = try String(contentsOfFile: out, encoding: .utf8)
-        #expect(html.contains("background:#1D1D1F"))
+        #expect(html.contains("background:#1C1C1E"))
         #expect(html.contains("· Alex Chen</p></footer>"))
     }
 

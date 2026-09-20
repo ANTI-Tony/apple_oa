@@ -4,9 +4,9 @@ import Observation
 import ReportCore
 import SwiftUI
 
-/// Preview width presets. Email clients wrap around 600 points; chat tools
-/// show narrower cards.
-enum PreviewWidth: String, CaseIterable, Identifiable {
+/// Export widths. Email clients wrap around 600 points; chat tools show
+/// narrower cards. The canvas uses the same width so it previews the export.
+enum CardWidth: String, CaseIterable, Identifiable {
     case chat, email, wide
 
     var id: String {
@@ -23,9 +23,9 @@ enum PreviewWidth: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .chat: "Chat · 480"
-        case .email: "Email · 600"
-        case .wide: "Wide · 800"
+        case .chat: "Chat (480)"
+        case .email: "Email (600)"
+        case .wide: "Wide (800)"
         }
     }
 }
@@ -38,19 +38,34 @@ struct Notice: Identifiable, Equatable {
     var isError: Bool
 }
 
-/// UI state that is not part of the document: report visibility, preview
-/// width, transient notices, and the copy/export actions that produce them.
+/// UI state that is not part of the document: selection, the inspector, the
+/// export width, transient notices, and the copy/export actions.
 @MainActor
 @Observable
 final class WorkspaceState {
-    /// Whether the accessibility report popover is open.
-    var showAccessibilityReport = false
-    var previewWidth: PreviewWidth = .email
-    var highlightedBlockID: UUID?
-    private(set) var notice: Notice?
+    /// The block being formatted. Set by putting the caret in a block or
+    /// clicking it, cleared by clicking the desk around the card.
+    var selectedBlockID: UUID?
+    /// Whether the user wants the Format inspector. Narrow windows hide it
+    /// without forgetting this.
+    var wantsInspector = true
+    var inspectorTab: InspectorTab = LaunchOverrides.inspectorTab ?? .card
+    var cardWidth: CardWidth = .email
 
+    /// One-shot requests from the toolbar and menus to the canvas.
+    var insertRequest: InsertRequest?
+    var scrollTarget: UUID?
+    var isImportingImage = false
+    var pendingPaste: PastePayload?
+
+    private(set) var notice: Notice?
     private var noticeTask: Task<Void, Never>?
-    private var highlightTask: Task<Void, Never>?
+
+    /// Opens the inspector on a tab, e.g. from "Add Description" on an image.
+    func reveal(_ tab: InspectorTab) {
+        inspectorTab = tab
+        wantsInspector = true
+    }
 
     // MARK: Notices
 
@@ -65,21 +80,11 @@ final class WorkspaceState {
         }
     }
 
-    /// Scrolls the editor to a block and outlines it briefly. Used by the
-    /// accessibility inspector to jump to an issue.
-    func highlight(blockID: UUID) {
-        highlightedBlockID = blockID
-        highlightTask?.cancel()
-        highlightTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(2))
-            guard !Task.isCancelled else { return }
-            if self?.highlightedBlockID == blockID {
-                self?.highlightedBlockID = nil
-            }
-        }
-    }
-
     // MARK: Copy and export
+
+    func exportPreferences(from preferences: UserPreferences) -> ExportPreferences {
+        ExportPreferences(scale: preferences.exportScale, includeFooter: preferences.includeFooter, width: cardWidth.points)
+    }
 
     func copy(_ card: SnippetCard, variant: CopyVariant, preferences: ExportPreferences) {
         do {

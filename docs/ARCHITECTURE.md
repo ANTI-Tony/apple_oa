@@ -15,11 +15,11 @@
 App (macOS, SwiftUI + AppKit)
 ├── ReportingBuilderApp      scenes, environment injection, menu commands
 ├── Store/                   CardStore (@Observable, @MainActor), persistence, sample content
-├── Workspace/               WorkspaceState (report popover, notices, copy/export), file panels,
-│                            commands, focused-block key for block shortcuts
-├── Views/                   MainWindow, Sidebar, Editor (block editors, import sheets),
-│                            Preview (CardView, PreviewPane), Settings,
-│                            Components (accessibility badge + report popover, notices)
+├── Workspace/               WorkspaceState (selection, inspector, width, notices, copy/export),
+│                            WindowLayout, file panels, menu commands
+├── Views/                   MainWindow, Sidebar, Canvas (the card edited in place),
+│                            Card (CardStyle, CardSurface, static CardView for export),
+│                            Inspector (Card / Block / Accessibility tabs), Sheets, Settings
 ├── Export/                  CardExporter (PNG/HTML/MD/TXT/JSON), PasteboardWriter,
 │                            AttributedCardRenderer (RTF/RTFD), CardTransfer (share, drag)
 ├── Ingestion/               DropIngestor, PasteIngestor, ImageImport, VisionServices
@@ -79,7 +79,8 @@ paste / drop / file ──► PasteIngestor / DropIngestor ──► ContentDete
                               ├──► FileCardPersistence (debounced 400 ms, atomic write)
                               │
                               ▼
-        CardView ◄── PreviewPane        AccessibilityLinter ──► badge + report popover
+        EditableCardView (canvas)       AccessibilityLinter ──► toolbar status + inspector tab
+        CardView (export) ── same CardStyle, CardSurface, MetricsGroup
            │
            ├──► ImageRenderer ──► PNG (export, Copy as Image, share, drag)
         HTMLRenderer ──► email fragment (pasteboard .html) / standalone page (export)
@@ -129,19 +130,26 @@ exception is the UI test for ⇧⌘C, which exercises the real general pasteboar
 by design. UI tests need macOS automation permission for the process that
 launches them; run them from Xcode (⌘U) the first time.
 
-## Adaptive layout
+## Canvas, inspector and adaptive layout
 
-`WindowLayout` maps the window width to one of three arrangements: three
-columns (≥ 1100 pt), editor plus preview (≥ 760 pt), or a single pane with an
-Edit/Preview switch (down to 560 pt). `MainWindow` measures its width with
-`onGeometryChange` and changes `NavigationSplitView` visibility only when a
-breakpoint is crossed. `PreviewPane` lays the card out at its true export
-width, measures it, and scales it to the column, so the preview is never
-clipped and PNG export is unaffected. See ADR 0009.
+The window follows the iWork model (ADR 0010): the card is edited in place on
+a canvas, and a Format inspector holds what is not visible on the card. The
+editable `EditableCardView` and the static `CardView` used for PNG export are
+assembled from the same `CardStyle` constants, `CardSurface` modifier and
+`MetricsGroup` layout, so they cannot drift apart. Block selection follows
+keyboard focus through a single `@FocusState` (`CanvasFocus`).
+
+`WindowLayout` maps the window width to list + canvas + inspector (≥ 1080 pt),
+canvas + inspector (≥ 780 pt) or the canvas alone (down to 480 pt).
+`MainWindow` reads the width from a `GeometryReader` around the split view and
+changes visibility only when a breakpoint is crossed. The card is fluid rather
+than scaled, because AppKit-backed text fields do not survive `scaleEffect`;
+exports always render at the width chosen in the inspector. See ADR 0009.
 
 ## Extension points
 
-- New block kind: add a case to `Block`, an editor view, and a branch in each
+- New block kind: add a case to `Block`, an editable view and a static view
+  in `Views/Canvas` and `Views/Card`, an inspector section, and a branch in each
   renderer. The compiler's exhaustiveness checks list every spot.
 - New destination: add a `CopyVariant` or `ExportFormat` and a renderer.
 - New accessibility rule: add a case to `AccessibilityRule` and a check in

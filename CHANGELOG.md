@@ -7,6 +7,15 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Changed
+- Redesigned the app on the iWork model: the card is edited in place on a
+  canvas, with a Format inspector (Card, Block, Accessibility) instead of a
+  form and a preview. Restyled the card and every export typographically
+  (large title, sentence-case headings, rounded numerals, one grouped metrics
+  surface, status as words with an indicator) using Apple's increased-contrast
+  system colours. New icon. The Ocean theme became Paper. Status labels use
+  title case. A single newline is now a line break in every renderer.
+- Window breakpoints are 1080 and 780 pt; minimum width 480 pt. The export
+  width chosen in the inspector now applies to PNG, HTML, share and drag.
 - Removed the partial Simplified Chinese translation; the UI is consistently
   English and dates follow the app language.
 - Templates take an injected date and locale; JSON dates keep milliseconds.

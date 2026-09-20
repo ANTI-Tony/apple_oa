@@ -66,7 +66,7 @@ struct SnippetCardTests {
     func textFragments() {
         let block = TextBlock(body: "Intro line\nstill intro\n\n- one\n* two\n• three\n\nOutro")
         #expect(block.fragments == [
-            .paragraph("Intro line still intro"),
+            .paragraph("Intro line\nstill intro"),
             .bullets(["one", "two", "three"]),
             .paragraph("Outro"),
         ])

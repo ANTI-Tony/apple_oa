@@ -3,7 +3,8 @@ import Foundation
 /// Free text with an optional heading.
 ///
 /// The body uses a deliberately tiny markup subset: lines that start with
-/// `- `, `* ` or `• ` become list items, blank lines separate paragraphs.
+/// `- `, `* ` or `• ` become list items, blank lines separate paragraphs, and
+/// a single newline inside a paragraph is a line break.
 /// Everything else is literal text. Keeping the subset small means the
 /// HTML, Markdown, plain-text and SwiftUI renderers all agree on the result.
 public struct TextBlock: Identifiable, Codable, Hashable, Sendable {
@@ -50,7 +51,7 @@ public enum TextFragment: Hashable, Sendable {
 
         func flushParagraph() {
             if !paragraph.isEmpty {
-                fragments.append(.paragraph(paragraph.joined(separator: " ")))
+                fragments.append(.paragraph(paragraph.joined(separator: "\n")))
                 paragraph.removeAll()
             }
         }

@@ -8,6 +8,7 @@ import UniformTypeIdentifiers
 /// is free until a receiver asks for data.
 struct CardTransfer: Transferable, Sendable {
     let card: SnippetCard
+    var width: CGFloat = 600
 
     static var transferRepresentation: some TransferRepresentation {
         FileRepresentation(exportedContentType: .png) { transfer in
@@ -30,7 +31,8 @@ struct CardTransfer: Transferable, Sendable {
 
     private func pngData() async throws -> Data {
         let card = card
-        let data = await MainActor.run { CardExporter.pngData(for: card) }
+        let width = width
+        let data = await MainActor.run { CardExporter.pngData(for: card, width: width) }
         guard let data else { throw ExportError.renderFailed }
         return data
     }
