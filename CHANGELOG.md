@@ -53,6 +53,9 @@ All notable changes to this project are documented here. The format follows
   a speaker glyph, and pressing play opens the transcript.
 - The Done button of the colour-vision banner was merged into a static text
   element and could not be reached on its own with VoiceOver.
+- Every image in the deck carries a description. PptxGenJS writes the file's
+  absolute path as the alternative text when none is given, so the slides both
+  leaked a local path and would have read out that path to a screen reader.
 - Inspector: the accessibility verdict wrapped ragged-left in a trailing column,
   section footers did not line up with their headers, and the empty-selection
   placeholder was oversized for a narrow column.

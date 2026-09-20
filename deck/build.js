@@ -68,10 +68,14 @@ function bullets(slide, items, x, y, w, h, opts = {}) {
     x, y, w, h, fontFace: FONT, fontSize: 15, color: C.ink, margin: 0, valign: "top", isTextBox: true,
   }, opts));
 }
-function image(slide, file, x, y, w, h) {
+// Every picture must be described. PptxGenJS falls back to the file's absolute
+// path when altText is missing, which both leaks a local path and reads out as
+// the alternative text; a deck about accessibility cannot ship that.
+function image(slide, file, x, y, w, h, alt) {
+  if (!alt || alt.length < 12) throw new Error(`describe the image ${file}`);
   const full = path.join(ASSETS, file);
   if (!fs.existsSync(full)) { console.warn("missing asset", file); return; }
-  slide.addImage({ path: full, x, y, w, h, sizing: { type: "contain", w, h } });
+  slide.addImage({ path: full, x, y, w, h, sizing: { type: "contain", w, h }, altText: alt, objectName: file });
 }
 function dot(slide, x, y, color) {
   slide.addShape(pres.shapes.OVAL, { x, y, w: 0.16, h: 0.16, fill: { color }, line: { color, width: 0 } });
@@ -81,7 +85,7 @@ function dot(slide, x, y, color) {
 {
   const s = newSlide(true, NOTES[0].notes);
   if (s) {
-    image(s, "app-icon.png", M, 1.5, 1.5, 1.5);
+    image(s, "app-icon.png", M, 1.5, 1.5, 1.5, "The app icon: a blue document card on a white rounded plate.");
     text(s, "Reporting Builder", M, 3.3, 9, 1, { fontSize: 50, bold: true, color: C.white });
     text(s, "From raw notes to an accessible status card, in the tools your team already uses.", M, 4.35, 9.5, 0.9, { fontSize: 22, color: C.darkGrey });
     text(s, "Tony Wen  ·  Project Reporting Builder  ·  Proof of concept", M, 6.3, 9, 0.4, { fontSize: 14, color: C.darkGrey });
@@ -118,7 +122,7 @@ function dot(slide, x, y, color) {
     kicker(s, "WHAT I BUILT");
     title(s, "A Mac app where the card is the document");
     card(s, M, 1.6, 8.3, 5.2);
-    image(s, "hero.png", M + 0.15, 1.75, 8.0, 4.9);
+    image(s, "hero.png", M + 0.15, 1.75, 8.0, 4.9, "The app window: a list of cards on the left, a weekly status card being edited in the middle, and the Format inspector on the right showing themes, text size, status and width.");
     const x = M + 8.7, w = W - x - M;
     text(s, "In", x, 1.7, w, 0.35, { fontSize: 13, bold: true, color: C.grey });
     text(s, "Type on the card, paste a spreadsheet range, drop files. Smart Paste picks the block type.", x, 2.05, w, 1.0, { fontSize: 15 });
@@ -149,7 +153,7 @@ function dot(slide, x, y, color) {
       text(s, String(i + 1), M, y + 0.08, 0.5, 0.34, { fontSize: 15, bold: true, color: C.white, align: "center" });
       text(s, t, M + 0.75, y + 0.07, 5.6, 0.45, { fontSize: 16, color: C.white });
     });
-    image(s, "missing.png", 7.3, 1.7, W - 7.3 - M, 4.9);
+    image(s, "missing.png", 7.3, 1.7, W - 7.3 - M, 4.9, "The same card after a chart is dropped in: the toolbar shield is red, the image carries an Add Description button, and the Accessibility tab reports one error.");
   }
 }
 
@@ -194,10 +198,10 @@ function dot(slide, x, y, color) {
     title(s, "The card is the editor");
     const iw = (W - 2 * M - 0.5) / 2;
     card(s, M, 1.65, iw, 3.95);
-    image(s, "before.png", M + 0.12, 1.77, iw - 0.24, 3.4);
+    image(s, "before.png", M + 0.12, 1.77, iw - 0.24, 3.4, "The first interface: a form of fields on the left and a live preview on the right, with capital-letter labels and boxed tiles.");
     text(s, "Version 1: form + preview", M + 0.3, 5.25, iw - 0.6, 0.3, { fontSize: 13, bold: true, color: C.grey });
     card(s, M + iw + 0.5, 1.65, iw, 3.95);
-    image(s, "hero.png", M + iw + 0.62, 1.77, iw - 0.24, 3.4);
+    image(s, "hero.png", M + iw + 0.62, 1.77, iw - 0.24, 3.4, "The second interface: the card itself edited on a canvas, with its properties moved into a Format inspector.");
     text(s, "Version 2: canvas + Format inspector", M + iw + 0.8, 5.25, iw - 0.6, 0.3, { fontSize: 13, bold: true, color: C.accent });
     bullets(s, [
       "Direct manipulation: click the title and type, as in Pages and Keynote",
@@ -215,14 +219,14 @@ function dot(slide, x, y, color) {
     title(s, "Accessibility you can experience, not just pass");
     const cw = (W - 2 * M - 2 * 0.4) / 3;
     const cols = [
-      ["Hear This Card", "Spoken the way a screen reader presents it, block by block. A missing description is a silence you can hear.", "listen-crop.png"],
-      ["Colour Vision", "Protanopia, deuteranopia, tritanopia, no colour. Status and changes still read, because they are shapes and words.", "cvd-crop.png"],
-      ["Fourteen checks, live", "Contrast, alt text, labels, headings, and language: “the red items”, long capitals, images that are mostly text (on-device OCR).", "checks-crop.png"],
+      ["Hear This Card", "Spoken the way a screen reader presents it, block by block. A missing description is a silence you can hear.", "listen-crop.png", "The spoken transcript: each line as a screen reader would say it, the line being read marked with a speaker glyph, and “Image. No description.” in red."],
+      ["Colour Vision", "Protanopia, deuteranopia, tritanopia, no colour. Status and changes still read, because they are shapes and words.", "cvd-crop.png", "The card simulated as seen with deuteranopia: the green and red of the status and the change arrows are gone, but the arrows, the words and the numbers still carry the meaning."],
+      ["Fourteen checks, live", "Contrast, alt text, labels, headings, and language: “the red items”, long capitals, images that are mostly text (on-device OCR).", "checks-crop.png", "The Accessibility tab reporting Needs Attention with one error, and the issue beneath it: describe this image for people who cannot see it, or mark it decorative, citing WCAG 1.1.1."],
     ];
     cols.forEach((c, i) => {
       const x = M + i * (cw + 0.4);
       card(s, x, 1.65, cw, 5.2);
-      image(s, c[2], x + 0.15, 1.8, cw - 0.3, 3.0);
+      image(s, c[2], x + 0.15, 1.8, cw - 0.3, 3.0, c[3]);
       text(s, c[0], x + 0.35, 5.0, cw - 0.7, 0.4, { fontSize: 18, bold: true });
       text(s, c[1], x + 0.35, 5.45, cw - 0.7, 1.3, { fontSize: 13.5, color: C.grey });
     });
@@ -266,7 +270,7 @@ function dot(slide, x, y, color) {
     kicker(s, "AI ASSISTANCE  ·  OPT-IN");
     title(s, "New Card from Notes: the brief's first sentence");
     card(s, M, 1.65, 7.4, 5.15);
-    image(s, "draft.png", M + 0.15, 1.8, 7.1, 4.85);
+    image(s, "draft.png", M + 0.15, 1.8, 7.1, 4.85, "New Card from Notes: rough meeting notes on the left, and on the right the drafted card with a title, status, summary, highlights, metrics, risks and next steps, above a line saying all fourteen accessibility checks passed.");
     const x = M + 7.8, w = W - x - M;
     bullets(s, [
       "Rough notes in; title, status, highlights, metrics, risks, next steps out",
@@ -360,7 +364,7 @@ function dot(slide, x, y, color) {
       if (i < 3) text(s, "→", x + sw + 0.08, 2.1, 0.4, 0.5, { fontSize: 22, color: C.grey, align: "center" });
     });
     card(s, M, 3.45, 6.3, 3.4);
-    image(s, "gallery-fade.png", M + 0.12, 3.57, 6.06, 3.16);
+    image(s, "gallery-fade.png", M + 0.12, 3.57, 6.06, 3.16, "The published card gallery page, showing the weekly status and milestone templates rendered by the same HTML renderer the app uses for email.");
     const x = M + 6.75, w = W - x - M;
     bullets(s, [
       "User data stays on the Mac by design",
