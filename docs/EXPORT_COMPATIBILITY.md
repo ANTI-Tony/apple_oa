@@ -14,17 +14,21 @@ flavour: image (PNG + TIFF), Markdown, Slack mrkdwn, plain text, HTML source.
 
 ## Matrix
 
-Status legend: **verified** = pasted and inspected on macOS 15.6 during
-development; *expected* = based on the app's documented pasteboard behaviour,
-not yet checked by hand. Re-verify after changing any renderer.
+Status legend: **verified** = pasted and inspected by hand on macOS 15.6;
+*expected* = based on the app's documented pasteboard behaviour, not yet
+checked by hand. Re-verify after changing any renderer.
+
+"Copy for Email" was checked by hand into Mail, Notes, Messages and Slack.
+Every other cell in this table is still *expected*, including the "Copy as
+Image" column for those same four apps.
 
 | Destination | Copy for Email | Copy as Image | Copy as Markdown / Slack | Notes |
 |---|---|---|---|---|
-| Apple Mail (macOS) | *expected*: rich text with headings, table, inline image | *expected*: inline image | plain | Mail prefers RTFD. Table renders via `NSTextTable`. |
-| Apple Notes | *expected*: rich text with image | *expected* | plain | |
+| Apple Mail (macOS) | **verified**: rich text with headings, table, inline image | *expected*: inline image | plain | Mail prefers RTFD. Table renders via `NSTextTable`. |
+| Apple Notes | **verified**: rich text with image | *expected* | plain | |
 | TextEdit (rich) | *expected*: rich text with image | *expected* | plain | Useful for quick inspection. |
-| Messages | *expected*: plain text (Messages ignores RTF) | *expected*: image bubble | plain | Use "Copy as Image" for a visual card. |
-| Slack (desktop) | *expected*: HTML converted to Slack formatting; images dropped | *expected*: attaches image | "Copy for Slack" gives exact mrkdwn | Slack reads `public.html` then `text/plain`. |
+| Messages | **verified**: plain text (Messages ignores RTF) | *expected*: image bubble | plain | Use "Copy as Image" for a visual card. |
+| Slack (desktop) | **verified**: HTML converted to Slack formatting; images dropped | *expected*: attaches image | "Copy for Slack" gives exact mrkdwn | Slack reads `public.html` then `text/plain`. |
 | Microsoft Teams | *expected*: HTML formatting kept | *expected* | Markdown mostly ignored; use rich | |
 | Outlook (macOS) | *expected*: rich text or HTML | *expected* | plain | Outlook's Word engine ignores some CSS; layout uses tables for this reason. |
 | Gmail (web) | *expected*: HTML with inline styles | *expected* | plain | Gmail strips `<style>`, keeps inline styles; data-URI images may be blocked, so use the PNG for images. |

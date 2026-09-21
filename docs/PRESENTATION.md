@@ -114,10 +114,10 @@ accessibility features.
 | 11 | Fast where it is cheap, honest where it is not | 10:27 | 137 |
 | 12 | Built to be read and changed | 11:30 | 85 |
 | 13 | The cloud carries the software, not your data | 12:09 | 115 |
-| 14 | What I would not claim yet | 13:03 | 90 |
+| 14 | What I would not claim yet | 13:03 | 101 |
 | 15 | Three things to take away | 13:45 | 64 |
 
-1628 words in all; the plan ends at 14:15, which leaves room inside a fifteen-minute slot.
+1639 words in all; the plan ends at 14:15, which leaves room inside a fifteen-minute slot.
 
 ### 1. Reporting Builder
 
@@ -173,7 +173,7 @@ The brief mentions the cloud. A Mac app is distributed rather than hosted, and u
 
 ### 14. What I would not claim yet
 
-I want to be straightforward about what I cannot claim. The on-device model path compiles behind availability checks, but I could not run it on macOS 15. The paste matrix separates what I verified by hand from what I expect from each app's documentation. The VoiceOver features are tested for their data; the experience needs someone who uses VoiceOver every day. The tagged PDF has a structure tree, but I have not run a PDF/UA validator. Next would be an iPad target on the same core, share links, and localisation.
+I want to be straightforward about what I cannot claim. The on-device model path compiles behind availability checks, but I could not run it on macOS 15. The paste matrix separates what I verified by hand, which is Copy for Email into Mail, Notes, Messages and Slack, from what I expect from each app's documentation. The VoiceOver features are tested for their data; the experience needs someone who uses VoiceOver every day. The tagged PDF has a structure tree, but I have not run a PDF/UA validator. Next would be an iPad target on the same core, share links, and localisation.
 
 ### 15. Three things to take away
 
