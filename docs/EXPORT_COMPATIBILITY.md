@@ -22,12 +22,17 @@ checked by hand. Re-verify after changing any renderer.
 Every other cell in this table is still *expected*, including the "Copy as
 Image" column for those same four apps.
 
+Checking Messages corrected this file: it had predicted that Messages ignores
+rich text and takes the plain-text flavour. It does not. It renders the rich
+text and drops only the table structure. The row below now says what was
+actually seen.
+
 | Destination | Copy for Email | Copy as Image | Copy as Markdown / Slack | Notes |
 |---|---|---|---|---|
 | Apple Mail (macOS) | **verified**: rich text with headings, table, inline image | *expected*: inline image | plain | Mail prefers RTFD. Table renders via `NSTextTable`. |
 | Apple Notes | **verified**: rich text with image | *expected* | plain | |
 | TextEdit (rich) | *expected*: rich text with image | *expected* | plain | Useful for quick inspection. |
-| Messages | **verified**: plain text (Messages ignores RTF) | *expected*: image bubble | plain | Use "Copy as Image" for a visual card. |
+| Messages | **verified**: rich text. Headings, status glyph and bullets survive; the metrics table is flattened to one line per cell, header cells included | *expected*: image bubble | plain | Messages accepts RTF but not `NSTextTable`. For a card with metrics, use "Copy as Plain Text" or "Copy as Image". |
 | Slack (desktop) | **verified**: HTML converted to Slack formatting; images dropped | *expected*: attaches image | "Copy for Slack" gives exact mrkdwn | Slack reads `public.html` then `text/plain`. |
 | Microsoft Teams | *expected*: HTML formatting kept | *expected* | Markdown mostly ignored; use rich | |
 | Outlook (macOS) | *expected*: rich text or HTML | *expected* | plain | Outlook's Word engine ignores some CSS; layout uses tables for this reason. |
@@ -42,6 +47,13 @@ Image" column for those same four apps.
   separate action.
 - Rich text uses the light palette regardless of the card theme, because
   the destination background is almost always white.
+- Metrics are an `NSTextTable` in the rich-text flavour. A destination built
+  on the AppKit text system lays it out as a table; one that is not flattens
+  every cell into its own paragraph, so "Metric", "Value", each label and each
+  value land on separate lines and the header cells read as data. Observed in
+  Messages. The app's answer is the other copy variants rather than a weaker
+  table: "Copy as Plain Text" puts each metric on one line as
+  `Label: value (up 5%, positive)`, and "Copy as Image" keeps the layout.
 - Email HTML uses inline styles and `<table role="presentation">` for tile
   layout. This is deliberate: Outlook desktop and Gmail drop stylesheets and
   flexbox.
