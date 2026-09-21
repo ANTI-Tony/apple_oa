@@ -190,24 +190,43 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 6 Principle 2
+// ---------------------------------------------------------------- 6 Architecture
 {
   const s = newSlide(false, NOTES[5].notes);
   if (s) {
-    kicker(s, "PRINCIPLE 2");
-    title(s, "The card is the editor");
-    const iw = (W - 2 * M - 0.5) / 2;
-    card(s, M, 1.65, iw, 3.95);
-    image(s, "before.png", M + 0.12, 1.77, iw - 0.24, 3.4, "The first interface: a form of fields on the left and a live preview on the right, with capital-letter labels and boxed tiles.");
-    text(s, "Version 1: form + preview", M + 0.3, 5.25, iw - 0.6, 0.3, { fontSize: 13, bold: true, color: C.grey });
-    card(s, M + iw + 0.5, 1.65, iw, 3.95);
-    image(s, "hero.png", M + iw + 0.62, 1.77, iw - 0.24, 3.4, "The second interface: the card itself edited on a canvas, with its properties moved into a Format inspector.");
-    text(s, "Version 2: canvas + Format inspector", M + iw + 0.8, 5.25, iw - 0.6, 0.3, { fontSize: 13, bold: true, color: C.accent });
-    bullets(s, [
-      "Direct manipulation: click the title and type, as in Pages and Keynote",
-      "What is not visible on the card lives in an inspector: theme, layout, image description",
-      "Typographic card: hierarchy from size and weight, not boxes, capitals or colour",
-    ], M + 0.15, 5.9, W - 2 * M - 0.15, 1.3, { fontSize: 15, gap: 4 });
+    kicker(s, "ARCHITECTURE");
+    title(s, "One package below, two consumers above");
+    const inner = W - 2 * M;
+    const aw = 7.3, bx = M + aw + 0.4, bw = W - M - bx;
+
+    card(s, M, 1.55, aw, 1.3);
+    text(s, "Reporting Builder.app", M + 0.35, 1.78, aw - 0.7, 0.4, { fontSize: 18, bold: true });
+    text(s, "SwiftUI + AppKit · Store · Workspace · Canvas · Inspector · Export · Assistant", M + 0.35, 2.24, aw - 0.7, 0.5, { fontSize: 13, color: C.grey });
+
+    card(s, bx, 1.55, bw, 1.3);
+    text(s, "reportcard", bx + 0.35, 1.78, bw - 0.7, 0.4, { fontSize: 18, bold: true });
+    text(s, "a command-line tool · render · lint · site", bx + 0.35, 2.24, bw - 0.7, 0.5, { fontSize: 13, color: C.grey });
+
+    text(s, "↓  imports", M, 3.0, aw, 0.35, { fontSize: 13, color: C.grey, align: "center" });
+    text(s, "↓  imports", bx, 3.0, bw, 0.35, { fontSize: 13, color: C.grey, align: "center" });
+
+    card(s, M, 3.5, inner, 1.5, C.ink);
+    text(s, "ReportCore", M + 0.45, 3.72, inner - 0.9, 0.45, { fontSize: 22, bold: true, color: C.white });
+    text(s, "a Swift package that imports only Foundation", M + 0.45, 4.18, inner - 0.9, 0.35, { fontSize: 13, color: C.darkGrey });
+    text(s, "Model · Ingestion · Rendering · Accessibility linter · Templates · Assistant prompts", M + 0.45, 4.52, inner - 0.9, 0.4, { fontSize: 15, color: C.white });
+
+    const pts = [
+      ["Dependencies point one way", "ReportCore has never heard of SwiftUI, AppKit or the network, and nothing below it imports anything above."],
+      ["Testable without a window", "Its ninety tests run in under a second, so the renderers and the linter stay cheap to change."],
+      ["One target away from iPad", "The package builds for iOS too. Only the views are specific to the Mac."],
+    ];
+    const pw = (inner - 2 * 0.4) / 3;
+    pts.forEach((p, i) => {
+      const x = M + i * (pw + 0.4);
+      text(s, p[0], x, 5.35, pw, 0.35, { fontSize: 16, bold: true });
+      text(s, p[1], x, 5.76, pw, 1.0, { fontSize: 13.5, color: C.grey });
+    });
+    text(s, "Swift 6 language mode throughout: a card is a Sendable value type, and the stores are main-actor observable objects.", M, 6.8, inner, 0.4, { fontSize: 13, italic: true, color: C.grey });
   }
 }
 
@@ -313,13 +332,54 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 11 Engineering
+// ---------------------------------------------------------------- 11 Testing
 {
   const s = newSlide(false, NOTES[10].notes);
   if (s) {
+    kicker(s, "TESTING");
+    title(s, "Fast where it is cheap, honest where it is not");
+    const inner = W - 2 * M;
+    const levels = [
+      ["90", "core unit tests", "Parsers, renderers, contrast maths, the fourteen linter rules, the draft parser. Under one second."],
+      ["47", "app unit tests", "Store and undo, persistence, every export including the tagged PDF, pasteboard types, smart paste."],
+      ["12", "UI tests", "Canvas, inspector, the undescribed image, Hear This Card, Colour Vision, drafting, and XCTest's accessibility audit."],
+      ["2", "static checks", "SwiftLint and SwiftFormat, clean, on every push alongside the tests."],
+    ];
+    const lw = (inner - 3 * 0.35) / 4;
+    levels.forEach((l, i) => {
+      const x = M + i * (lw + 0.35);
+      card(s, x, 1.55, lw, 2.45);
+      text(s, l[0], x + 0.3, 1.72, lw - 0.6, 0.75, { fontSize: 40, bold: true, color: C.accent });
+      text(s, l[1], x + 0.3, 2.46, lw - 0.6, 0.35, { fontSize: 15, bold: true });
+      text(s, l[2], x + 0.3, 2.86, lw - 0.6, 1.0, { fontSize: 12.5, color: C.grey });
+    });
+    const cw = (inner - 0.5) / 2;
+    card(s, M, 4.25, cw, 2.6);
+    text(s, "Kept deterministic", M + 0.4, 4.45, cw - 0.8, 0.4, { fontSize: 17, bold: true });
+    bullets(s, [
+      "Never the real clipboard, network or files: named pasteboards, temporary directories, an in-memory store, a stubbed client",
+      "One exception, on purpose: the Copy for Email test uses the real pasteboard, because that is what it tests",
+      "Dates and locale are injected, so a footer never depends on the test machine",
+      "Launch arguments open the app in a known state: a seeded card, a missing description, a canned model",
+    ], M + 0.4, 4.88, cw - 0.8, 1.95, { fontSize: 12.5, gap: 4 });
+    card(s, M + cw + 0.5, 4.25, cw, 2.6);
+    text(s, "Not covered by a test, and said so", M + cw + 0.9, 4.45, cw - 0.8, 0.4, { fontSize: 17, bold: true });
+    bullets(s, [
+      "How Mail and Slack actually render a paste: each destination is marked verified or expected in the docs",
+      "The VoiceOver experience: the data is tested, the experience needs a person who uses it daily",
+      "PDF/UA conformance: the structure tree is checked, a validator is not run",
+      "Each of these sits in the documentation next to the feature it limits",
+    ], M + cw + 0.9, 4.88, cw - 0.8, 1.95, { fontSize: 12.5, gap: 4 });
+  }
+}
+
+// ---------------------------------------------------------------- 12 Engineering
+{
+  const s = newSlide(false, NOTES[11].notes);
+  if (s) {
     kicker(s, "ENGINEERING");
-    title(s, "Built to be read, tested and changed");
-    const stats = [["137", "unit tests, plus 12 UI tests"], ["14", "accessibility rules, WCAG-mapped"], ["12", "architecture decision records"], ["0", "third-party dependencies, lint warnings"]];
+    title(s, "Built to be read and changed");
+    const stats = [["0", "third-party dependencies"], ["12", "architecture decision records"], ["4", "feature flags, set in xcconfig"], ["1", "YAML spec generates the Xcode project"]];
     const sw = (W - 2 * M - 3 * 0.35) / 4;
     stats.forEach((st, i) => {
       const x = M + i * (sw + 0.35);
@@ -331,26 +391,25 @@ function dot(slide, x, y, color) {
     card(s, M, 3.95, cw, 2.9);
     text(s, "Code", M + 0.4, 4.15, cw - 0.8, 0.4, { fontSize: 13, bold: true, color: C.grey });
     bullets(s, [
-      "ReportCore package (no UI imports) + app layer",
-      "Swift 6 language mode, strict concurrency",
       "Documented public API; comments say why, not what",
       "Model replies are untrusted input: parsed, bounded, linted",
-      "Conventional commits; both UI versions in history",
+      "One concern per type; the compiler lists every place a new block kind touches",
+      "Conventional commits, one change each, readable in order",
     ], M + 0.4, 4.6, cw - 0.8, 2.2, { fontSize: 14, gap: 6 });
     card(s, M + cw + 0.5, 3.95, cw, 2.9);
-    text(s, "Configuration, testing, CI", M + cw + 0.9, 4.15, cw - 0.8, 0.4, { fontSize: 13, bold: true, color: C.grey });
+    text(s, "Configuration and delivery", M + cw + 0.9, 4.15, cw - 0.8, 0.4, { fontSize: 13, bold: true, color: C.grey });
     bullets(s, [
-      "xcconfig versions and feature flags; XcodeGen project from YAML",
-      "Swift Testing + XCUITest with the accessibility audit",
-      "Unit tests never touch the real clipboard, network or user data",
-      "GitHub Actions: tests, SwiftLint, SwiftFormat, CLI smoke test",
+      "Versions, flags and signing live in xcconfig, not buried in the project file",
+      "XcodeGen writes the .xcodeproj from YAML, so the build is reviewable",
+      "One flag removes writing assistance and its network entitlement",
+      "GitHub Actions on every push: tests, SwiftLint, SwiftFormat, CLI smoke test",
     ], M + cw + 0.9, 4.6, cw - 0.8, 2.2, { fontSize: 14, gap: 6 });
   }
 }
 
-// ---------------------------------------------------------------- 12 Cloud
+// ---------------------------------------------------------------- 13 Cloud
 {
-  const s = newSlide(false, NOTES[11].notes);
+  const s = newSlide(false, NOTES[12].notes);
   if (s) {
     kicker(s, "CLOUD AND DELIVERY");
     title(s, "The cloud carries the software, not your data");
@@ -376,9 +435,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 13 Trade-offs
+// ---------------------------------------------------------------- 14 Trade-offs
 {
-  const s = newSlide(false, NOTES[12].notes);
+  const s = newSlide(false, NOTES[13].notes);
   if (s) {
     kicker(s, "TRADE-OFFS");
     title(s, "What I would not claim yet");
@@ -404,9 +463,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 14 Close
+// ---------------------------------------------------------------- 15 Close
 {
-  const s = newSlide(true, NOTES[13].notes);
+  const s = newSlide(true, NOTES[14].notes);
   if (s) {
     title(s, "Three things to take away", true, { size: 38 });
     const items = [

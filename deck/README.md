@@ -1,6 +1,6 @@
 # Presentation deck
 
-`Reporting-Builder.pptx` is the fifteen-minute talk: 14 slides, with the full
+`Reporting-Builder.pptx` is the fifteen-minute talk: 15 slides, with the full
 script in the speaker notes. It opens in Keynote or PowerPoint.
 
 The deck is generated, so the slides, the speaker notes and
@@ -11,7 +11,7 @@ The deck is generated, so the slides, the speaker notes and
 | `notes.js` | The talk, slide by slide. The single source for the speaker notes and for `docs/PRESENTATION.md`. |
 | `build.js` | Layout, written with [PptxGenJS](https://github.com/gitbrent/PptxGenJS). |
 | `presentation-md.js` | Writes the script section of `docs/PRESENTATION.md` from `notes.js`. |
-| `assets/` | Screenshots of the running app, captured from the app's own window with the launch overrides in `LaunchOverrides`. |
+| `assets/` | Screenshots of the running app, captured from the app's own window with the launch overrides in `LaunchOverrides`. Nothing here is unused: `build.js` fails on a missing file. |
 
 ```sh
 cd deck

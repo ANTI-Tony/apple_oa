@@ -1,6 +1,6 @@
 # Presentation (15 minutes)
 
-The deck is [deck/Reporting-Builder.pptx](../deck/Reporting-Builder.pptx): 14 slides, with
+The deck is [deck/Reporting-Builder.pptx](../deck/Reporting-Builder.pptx): 15 slides, with
 the full script in the speaker notes. It opens in Keynote or PowerPoint. The script below is
 generated from the same source as those notes (`deck/notes.js`), so the two cannot drift.
 
@@ -10,21 +10,43 @@ generated from the same source as those notes (`deck/notes.js`), so the two cann
 |---|---|---|
 | 0:00–2:00 | The problem, and what I built | 1–3 |
 | 2:00–5:00 | **Live demo** | 4 |
-| 5:00–8:30 | Three design principles: one model, the card is the editor, accessibility you can experience | 5–8 |
+| 5:00–6:50 | How it is put together: one model many renderers, then the layers | 5–6 |
+| 6:50–8:30 | Accessibility, for the reader and for the author | 7–8 |
 | 8:30–11:00 | The AI feature, and why its public-API path is for this exercise only | 9–10 |
-| 11:00–13:40 | Engineering, cloud and delivery, what I would not claim yet | 11–13 |
-| 13:40–14:10 | Three takeaways. The remaining minute is slack. | 14 |
+| 11:00–12:00 | How it is tested | 11 |
+| 12:00–13:45 | Configuration and conventions, delivery, what I would not claim yet | 12–14 |
+| 13:45–14:15 | Three takeaways. The rest of the slot is slack. | 15 |
 
 ## Pacing
 
-The script is written for about 130 words a minute. Rehearse it against a clock twice.
+The script is written for about 130 words a minute, which lands at 14:15 including a
+three-minute demo. Rehearse it against a clock twice, and time yourself: if your natural
+pace is nearer 120 words a minute you are over the slot and need the cuts below.
 
 - By the end of the demo the clock should read 5:00. By the end of slide 8 it should read 8:30.
-- If the clock reads past 9:15 after slide 8, say only the first two sentences of slides 11 and 12.
-  Those slides carry their own detail.
-- Never shorten slide 10. It is the one place the talk says what would not be acceptable in production.
+- If the clock reads past 9:15 after slide 8, cut slide 12 to its first two sentences and slide 13
+  to the gate and the tag. Both slides carry their own detail on the page.
+- Slides 6 and 11 are the architecture and the testing story, which is what an engineering
+  interview is actually buying. Do not cut them to save time; cut slide 12 instead.
+- Never shorten slide 10. It is the one place the talk says what would not be acceptable
+  in production.
 - The demo is the part most likely to run long. Its six steps are on slide 4. If a paste target
   misbehaves, say so, show the matching screenshot in `docs/assets/`, and move on.
+
+## Questions the architecture slide invites
+
+**Why a separate package rather than folders in the app?** A folder is a suggestion; a package
+is enforced. `ReportCore` cannot import SwiftUI even by accident, which is what keeps the
+renderers pure and the tests fast. It also made the command-line tool free.
+
+**What does Swift 6 strict concurrency actually buy here?** The card is a `Sendable` value type,
+so it crosses to a background task for OCR or a network call without a lock; stores are
+`@MainActor @Observable`, so the compiler rejects a stray write from a callback. The one place
+it bit me was a helper on a `View` called from a test thread, fixed with `nonisolated`.
+
+**Where would a new block kind touch?** A case on `Block`, an editable view, a static view, an
+inspector section, and a branch in each renderer. The compiler's exhaustiveness checks list
+every site, which is the point of the enum.
 
 ## Demo checklist
 
@@ -80,21 +102,22 @@ accessibility features.
 | Slide | Title | Starts at | Words |
 |---|---|---|---|
 | 1 | Reporting Builder | 0:00 | 68 |
-| 2 | Every week, the same update, three times | 0:30 | 80 |
-| 3 | A Mac app where the card is the document | 1:15 | 96 |
-| 4 | From scattered inputs to a shared card | 2:00 | 158 |
-| 5 | One model, many renderers | 5:00 | 93 |
-| 6 | The card is the editor | 5:45 | 101 |
-| 7 | Accessibility you can experience, not just pass | 6:39 | 133 |
-| 8 | For those who read it, and those who write it | 7:39 | 97 |
-| 9 | New Card from Notes: the brief's first sentence | 8:33 | 122 |
-| 10 | For this exercise only: not how I would ship it | 9:33 | 191 |
-| 11 | Built to be read, tested and changed | 10:57 | 111 |
-| 12 | The cloud carries the software, not your data | 11:51 | 119 |
-| 13 | What I would not claim yet | 12:45 | 108 |
-| 14 | Three things to take away | 13:39 | 64 |
+| 2 | Every week, the same update, three times | 0:30 | 78 |
+| 3 | A Mac app where the card is the document | 1:06 | 94 |
+| 4 | From scattered inputs to a shared card | 1:48 | 158 |
+| 5 | One model, many renderers | 4:48 | 82 |
+| 6 | One package below, two consumers above | 5:27 | 145 |
+| 7 | Accessibility you can experience, not just pass | 6:33 | 122 |
+| 8 | For those who read it, and those who write it | 7:30 | 86 |
+| 9 | New Card from Notes: the brief's first sentence | 8:09 | 119 |
+| 10 | For this exercise only: not how I would ship it | 9:03 | 185 |
+| 11 | Fast where it is cheap, honest where it is not | 10:27 | 137 |
+| 12 | Built to be read and changed | 11:30 | 85 |
+| 13 | The cloud carries the software, not your data | 12:09 | 115 |
+| 14 | What I would not claim yet | 13:03 | 90 |
+| 15 | Three things to take away | 13:45 | 64 |
 
-1541 words in all; the plan ends at 14:09, which leaves room inside a fifteen-minute slot.
+1628 words in all; the plan ends at 14:15, which leaves room inside a fifteen-minute slot.
 
 ### 1. Reporting Builder
 
@@ -102,11 +125,11 @@ Hello, I'm Tony. Thank you for your time. The brief asked for a tool that turns 
 
 ### 2. Every week, the same update, three times
 
-Think of a program manager on a Thursday afternoon. The material for the weekly update is scattered: bullet points in a notes app, numbers in a spreadsheet, a chart as a screenshot. They assemble it for email, then again for Slack, then again for the wiki. And nothing ever asks: can a colleague with a screen reader read this? Does the status still make sense without red and green? Three problems: assembling, re-formatting, and accessibility arriving too late, or never.
+Think of a program manager on a Thursday afternoon. The material for the weekly update is scattered: bullet points in a notes app, numbers in a spreadsheet, a chart as a screenshot. They assemble it for email, then again for Slack, then again for the wiki. And nothing ever asks: can a colleague with a screen reader read this? Does the status still make sense without red and green? Three problems: assembling, re-formatting, and accessibility arriving too late.
 
 ### 3. A Mac app where the card is the document
 
-This is Reporting Builder, a native Mac app in Swift and SwiftUI. On the left, your cards. In the middle, the card itself, and that is the editor: you click the title and type, as in Pages or Keynote. On the right, a Format inspector for what you can't see on the card: theme, layout, image descriptions, and the accessibility check. Why native rather than web? Copy and share are the product, and the Mac pasteboard can carry rich text, HTML and plain text at once. And accessibility is a platform feature here, not an add-on.
+This is Reporting Builder, a native Mac app in Swift and SwiftUI. On the left, your cards. In the middle, the card itself, and that is the editor: you click the title and type, as in Pages or Keynote. On the right, a Format inspector for what you cannot see on the card: theme, layout, image descriptions, and the accessibility check. Why native rather than web? Copy and share are the product, and the Mac pasteboard carries rich text, HTML and plain text at once. Accessibility is a platform feature here, not an add-on.
 
 ### 4. From scattered inputs to a shared card
 
@@ -114,41 +137,45 @@ Let me show you. I start a weekly status from a template and type straight onto 
 
 ### 5. One model, many renderers
 
-Three design principles. First: one model, many renderers. A card is a plain value type in a Swift package with no UI dependencies. Every output is a pure function of it: the canvas you edit, the PNG and PDF, inline-styled HTML for email, rich text for Mail and Notes, Markdown for Slack, plain text, even the spoken narration. That's why what you see is what you paste. It also makes a new destination cheap, and it lets the same code run without a window: a command-line tool renders and lints cards in CI.
+Three design principles. The first: one model, many renderers. A card is a plain value type with no UI dependencies, and every output is a pure function of it: the canvas you edit, the PNG and the PDF, inline-styled HTML for email, rich text for Mail, Markdown for Slack, plain text, even the spoken narration. That is why what you see is what you paste. It also makes a new destination cheap, and it lets the same code run without a window.
 
-### 6. The card is the editor
+### 6. One package below, two consumers above
 
-The second principle came from throwing my first interface away. Version one, on the left, was a form beside a live preview. It worked, but you described the card in one place and looked at it in another, and the card looked like a dashboard: capital-letter labels, coloured pills, boxed tiles. So I rebuilt it the way Pages and Keynote work. The card is the editor, and properties live in a Format inspector. The card became typographic: one large title, sentence-case headings, status as words beside a small indicator. Both versions are in the repository history, with the decision written down.
+Here is the shape of it, because the shape is the argument. At the bottom is one Swift package, ReportCore, that imports nothing but Foundation: the model, the parsers, every renderer, the accessibility linter and the templates. Two things sit on top, and neither knows the other exists: the Mac app, and a command-line tool. Dependencies point one way, and that single rule buys three things. The package's ninety tests run in under a second, so the renderers and the linter stay cheap to change. The same code runs headless, which is how accessibility became a gate in the pipeline. And it already builds for iOS, so an iPad version is a target rather than a rewrite. Inside the app it is Swift 6 with strict concurrency: a card is a Sendable value type, the stores are main-actor observable objects, and the compiler checks it.
 
 ### 7. Accessibility you can experience, not just pass
 
-The third principle is the one I care most about. Passing a checklist is the floor. Most people who write status reports don't use a screen reader, so they can't tell what their report is like for someone who does. So the app lets you experience it. Hear This Card reads the card in the order and words a screen reader uses: heading level one, list of three items, velocity forty-two, up five percent, positive. If an image has no description, you hear the gap. Colour Vision shows the card under the common colour-vision deficiencies. And the linter checks fourteen rules as you type, each mapped to a WCAG criterion. Some are about language: it flags "the items marked in red", and it notices an image that is really a picture of text.
+The third principle is the one I care most about. Passing a checklist is the floor. Most people who write status reports do not use a screen reader, so they cannot tell what their report is like for someone who does. So the app lets you experience it. Hear This Card reads the card in the order and words a screen reader uses: heading level one, list of three items, velocity forty-two, up five percent, positive. If an image has no description, you hear the gap. Colour Vision shows the card under the common colour-vision deficiencies. And the linter checks fourteen rules as you type, each mapped to a WCAG criterion, including ones about language: it flags “the items marked in red”.
 
 ### 8. For those who read it, and those who write it
 
-Accessibility has two audiences. For people who receive a card: large print, which every export follows, and a tagged PDF with real text, headings and figure descriptions, so a screen reader treats it as a document, not a picture. For people who use the app with VoiceOver: a metric's trend is an Audio Graph, so you hear the line as pitch, as in Stocks and Health; each block has move and delete actions, and a rotor jumps between blocks. The app honours the system's contrast, colour, transparency and motion settings, and structural edits have named Undo steps.
+Accessibility has two audiences. For people who receive a card: large print, which every export follows, and a tagged PDF with real text, headings and figure descriptions, so a screen reader treats it as a document rather than a picture. For people who use the app with VoiceOver: a metric's trend is an Audio Graph, so you hear the line as pitch; each block has move and delete actions, and a rotor jumps between blocks. The app honours the system's contrast, colour, transparency and motion settings.
 
 ### 9. New Card from Notes: the brief's first sentence
 
-I added one AI feature, because it answers the first sentence of the brief: quickly assemble and structure project progress. You paste rough notes, and the model returns a structured report: title, status, highlights, metrics, risks, next steps. What matters is what happens to the reply. It's treated as untrusted input: parsed defensively, every list bounded, the status mapped onto an enum, and then it goes through the same accessibility linter. The prompt forbids inventing numbers, nothing is saved until you press Create, and the sheet tells you to check every number. Refine does the same for one text block: concise, formal, or fix grammar. I did not rebuild Writing Tools: with Apple Intelligence, the system provides them in every text field.
+I added one AI feature, because it answers the first sentence of the brief: quickly assemble and structure project progress. You paste rough notes, and the model returns a structured report: title, status, highlights, metrics, risks, next steps. What matters is what happens to the reply. It is treated as untrusted input: parsed defensively, every list bounded, the status mapped onto an enum, and then it goes through the same accessibility linter. The prompt forbids inventing numbers, nothing is saved until you press Create, and the sheet tells you to check every number. Refine does the same for one text block. I did not rebuild Writing Tools: with Apple Intelligence the system already provides them in every text field.
 
 ### 10. For this exercise only: not how I would ship it
 
-Now the part I want to be very clear about. In this demo the model is a public API, DeepSeek. That is for this exercise only. I would not ship it, and I would not use it with real data. Status reports are business data. Sent to a public third-party model, they leave the organisation's control: the provider's retention and training terms apply, in the provider's jurisdiction, with no data-processing agreement, no security review and no audit trail. Pasted notes can carry a prompt injection, and a model can state a wrong number confidently. So why is it there? My Mac runs macOS 15, which can't run Apple's on-device model, and a demo needs a model that answers. But the design assumes the right answer. The provider sits behind a protocol. The first implementation is Apple's Foundation Models, on device, where nothing leaves the Mac. The second is any compatible endpoint, which in a company means an approved internal gateway with authentication, redaction and logging. The feature is off by default, asks consent per host, keeps the key in the Keychain, and one build flag removes it with the network entitlement.
+Now the part I want to be very clear about. In this demo the model is a public API, DeepSeek. That is for this exercise only. I would not ship it, and I would not use it with real data. Status reports are business data. Sent to a public third-party model they leave the organisation's control: the provider's retention and training terms apply, in the provider's jurisdiction, with no data-processing agreement, no security review and no audit trail. Pasted notes can carry a prompt injection, and a model can state a wrong number confidently. So why is it here? My Mac runs macOS 15, which cannot run Apple's on-device model, and a demo needs a model that answers. But the design assumes the right answer. The provider sits behind a protocol. The first implementation is Apple's Foundation Models, on device, where nothing leaves the Mac. The second is any compatible endpoint, which in a company means an approved internal gateway with authentication, redaction and logging. The feature is off by default, asks consent per host, and one build flag removes it with the network entitlement.
 
-### 11. Built to be read, tested and changed
+### 11. Fast where it is cheap, honest where it is not
 
-On engineering. The domain logic is a Swift package with no UI imports, so its tests run in about a second. Everything compiles in Swift 6 mode with strict concurrency. There are about a hundred and forty unit tests: parsers, renderers and the linter in the package; export, the pasteboard, undo, and the assistant against a stubbed network in the app. On top sit UI tests that include XCTest's accessibility audit. Configuration lives in xcconfig files and reaches runtime as feature flags. Lint is clean, CI runs on every push, and there are no third-party dependencies. Twelve short decision records explain the choices someone might question, including the ones I reversed.
+On testing, and the split is deliberate. Ninety tests in the package cover everything that is a pure function: parsers, renderers, contrast maths, the fourteen linter rules, and the parser that turns a model's reply into a card. They finish in under a second, so I run them constantly. Forty-seven app tests cover the store and undo, persistence, every export including the tagged PDF, and the assistant against a stubbed HTTP client. Twelve UI tests drive the real app, including XCTest's accessibility audit. Nothing touches your clipboard, your network or your files, with one deliberate exception: the Copy for Email test uses the real pasteboard, because the pasteboard is the thing under test. Three things I do not test, and say so instead: how Mail and Slack really render a paste, the VoiceOver experience, and PDF/UA conformance.
 
-### 12. The cloud carries the software, not your data
+### 12. Built to be read and changed
 
-The brief mentions the cloud. A Mac app is distributed rather than hosted, and I keep user data local on purpose. So what goes to the cloud is the software and its output. On every push, GitHub Actions runs tests and lint. A push to main also renders a gallery of every template with the same HTML renderer the app uses for email, and publishes it to GitHub Pages, but only if every card passes the accessibility linter in strict mode. Accessibility becomes a pipeline gate. A version tag is set up to build a release; I have not cut one yet. In an enterprise, the same artifact would be notarised and distributed through Apple Business Manager or MDM.
+On the engineering around it. Configuration is not buried in the Xcode project: versions, feature flags and signing live in xcconfig files and reach the running app through one typed accessor. The project file is generated from a YAML spec, so a reviewer can read the build the way they read the code, and one flag removes writing assistance together with its network entitlement. There are no third-party dependencies. And twelve short decision records explain the choices someone might question, including the ones I reversed.
 
-### 13. What I would not claim yet
+### 13. The cloud carries the software, not your data
 
-I want to be straightforward about what I can't claim. The on-device model path compiles behind availability checks, but I couldn't run it on macOS 15. The paste matrix separates what I verified by hand from what I expect from each app's documentation. The VoiceOver features are tested for their data, but the experience needs someone who uses VoiceOver every day. The tagged PDF has a structure tree, but I haven't run a PDF/UA validator. And rich text has no alt text, so an image pasted into Mail carries its caption, not its description. Next would be an iPad target on the same core, share links, and localisation.
+The brief mentions the cloud. A Mac app is distributed rather than hosted, and user data stays local on purpose, so what ships to the cloud is the software and its output. On every push, GitHub Actions runs the tests and lint. A push to main also renders a gallery of every template, with the same HTML renderer the app uses for email, and publishes it, but only if every card passes the linter in strict mode. Accessibility becomes a pipeline gate. A version tag is set up to build a release; I have not cut one yet. In an enterprise the same artifact would be notarised and distributed through Apple Business Manager or MDM.
 
-### 14. Three things to take away
+### 14. What I would not claim yet
+
+I want to be straightforward about what I cannot claim. The on-device model path compiles behind availability checks, but I could not run it on macOS 15. The paste matrix separates what I verified by hand from what I expect from each app's documentation. The VoiceOver features are tested for their data; the experience needs someone who uses VoiceOver every day. The tagged PDF has a structure tree, but I have not run a PDF/UA validator. Next would be an iPad target on the same core, share links, and localisation.
+
+### 15. Three things to take away
 
 Three things to take away. One model, many renderers: what you see is what you paste. Accessibility you can hear and see, not only pass, for the author, the reader and the VoiceOver user. And privacy as a design decision: local by default, AI opt-in, and honest about which parts are a demonstration. Thank you. I'd be glad to go deeper into any part.
 
