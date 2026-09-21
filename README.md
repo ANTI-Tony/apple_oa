@@ -20,7 +20,7 @@ other tool your team uses.
 | Modular cards | Cards are ordered blocks: text, metrics (grouped tiles or a table, with sparklines) and images. Reorder from the keyboard (⌥⌘↑/↓), the context menu or the inspector. Six templates to start from. |
 | Visually polished | Built like a Pages or Keynote document window: a list, the card itself as the editing canvas, and a Format inspector. The card is typographic: one large title, sentence-case headings, SF Rounded numerals, a single quiet group for metrics. Four themes; PNG export at 1×–3×. |
 | Accessibility-compliant | A built-in **accessibility linter** checks fourteen WCAG-mapped rules as you type, from contrast and alt text to "the red items" and images that are mostly text. **Hear This Card** reads the card the way a screen reader presents it; **Colour Vision** shows it as people with colour-vision deficiencies see it. Cards can be set in **large print**, and export as a **tagged PDF**. The toolbar shows the verdict; the inspector's Accessibility tab (⇧⌘K) lists issues and jumps to the block at fault. Exported HTML is semantic; status is never colour-only; images require alt text. The app itself is built for VoiceOver and the keyboard, and its UI tests include XCTest's accessibility audit. |
-| Instantly copy or export | **Copy for Email** (⇧⌘C) puts rich text with images, HTML and plain text on the clipboard at once. Also copy as image, Markdown, Slack format, plain text or HTML source. Export PNG, HTML, Markdown, plain text or JSON. Share sheet (Mail, Messages, AirDrop, Notes). Drag the preview straight into another app. |
+| Instantly copy or export | **Copy for Email** (⇧⌘C) puts rich text with images, HTML and plain text on the clipboard at once. Also copy as image, Markdown, Slack format, plain text or HTML source. **File ▸ Export** writes a **tagged PDF**, PNG, HTML, Markdown, plain text or JSON. Share sheet (Mail, Messages, AirDrop, Notes). Drag the preview straight into another app. |
 | Responsive | The window reflows from list + canvas + inspector, to canvas + inspector, to the canvas alone (minimum 480 pt), and the card on the canvas is fluid. Exported HTML is a responsive page. |
 | Deploy on cloud | GitHub Actions publishes the app to **Releases** and a **card gallery to GitHub Pages**, rendered headless by the `reportcard` command-line tool from the same renderers. The Pages build fails if any template stops passing the accessibility linter. |
 | Surprise and delight | **New Card from Notes** turns rough meeting notes into a structured, linted card with a language model (opt-in, on-device where available; see the note below). Audio Graphs for metric trends, a VoiceOver Blocks rotor and block actions, Undo/Redo, Continuity Camera import, printing, a Shortcuts action, alt-text suggestions, JSON import/export, and `reportcard lint` as an accessibility gate for CI pipelines. |
@@ -85,9 +85,11 @@ swift run reportcard lint --input card.json --strict    # exit 1 if not accessib
 5. **Check** the shield in the toolbar. If it turns red, the Accessibility tab
    says what to fix and takes you there.
 6. **Hear This Card** (⌥⌘L) in the Accessibility tab, and try **Colour Vision**.
-7. **Copy for Email** (⇧⌘C) and paste into Mail. Hold the Copy button for other
-   formats and file export (PNG, tagged PDF, HTML, Markdown, text, JSON), print
-   with ⌘P, or use the share button.
+7. **Copy for Email** (⇧⌘C) and paste into Mail. Hold the Copy button for the
+   other clipboard formats, or use the share button.
+8. **File ▸ Export** for a file: a **tagged PDF** with a real structure tree,
+   PNG at 1×–3×, HTML, Markdown, plain text or JSON. **⌘P** prints the same
+   layout.
 
 To try **New Card from Notes** (⇧⌘N): Settings → Writing Assistance → turn it on,
 choose the model, and for a custom endpoint paste an API key (kept in the

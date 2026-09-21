@@ -46,6 +46,11 @@ All notable changes to this project are documented here. The format follows
   and New Card from Notes with a canned model.
 
 ### Fixed
+- Export moved from the Card menu to **File ▸ Export**, beside Import Cards,
+  which is where macOS puts it and where people look for it. The tagged PDF
+  had been shipping since the accessibility round and was effectively
+  undiscoverable; the README's export list did not mention it either. A UI
+  test now asserts the File menu holds Import and Export.
 - The "Add Description" prompt sat on top of the image and could hide part of a
   chart, and its white-on-orange label failed contrast. It now sits under the
   image as a bordered button with a warning glyph.

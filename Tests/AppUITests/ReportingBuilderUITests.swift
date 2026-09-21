@@ -107,6 +107,21 @@ final class ReportingBuilderUITests: XCTestCase {
         XCTAssertTrue(types.contains(.string), "types: \(types)")
     }
 
+    @MainActor
+    func testExportLivesInTheFileMenuNextToImport() {
+        // Export used to sit in the Card menu, where people do not look for it.
+        let app = launchApp()
+        XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))
+        let file = app.menuBars.menuBarItems["File"]
+        XCTAssertTrue(file.waitForExistence(timeout: 5))
+        file.click()
+        XCTAssertTrue(file.menus.menuItems["Import Cards…"].waitForExistence(timeout: 5))
+        let export = file.menus.menuItems["Export"]
+        XCTAssertTrue(export.waitForExistence(timeout: 5))
+        export.hover()
+        XCTAssertTrue(export.menus.menuItems["PDF Document (Tagged)…"].waitForExistence(timeout: 5))
+    }
+
     // MARK: Accessibility features
 
     @MainActor

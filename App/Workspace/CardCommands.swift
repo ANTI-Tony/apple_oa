@@ -32,11 +32,20 @@ struct CardCommands: Commands {
                     }
                 }
             }
+        }
 
-            Divider()
-
+        // Import and Export are siblings in the File menu. Exporting used to
+        // live in the Card menu, where nobody went looking for it.
+        CommandGroup(replacing: .importExport) {
             Button("Import Cards…") { importCards() }
                 .keyboardShortcut("o", modifiers: .command)
+
+            Menu("Export") {
+                ForEach(ExportFormat.allCases) { format in
+                    Button("\(format.label)…") { export(format) }
+                }
+            }
+            .disabled(store.selectedCard == nil)
         }
 
         CommandGroup(replacing: .printItem) {
@@ -76,14 +85,6 @@ struct CardCommands: Commands {
                 Button("Copy for Slack") { copy(.slack) }
                 Button("Copy as Plain Text") { copy(.plain) }
                 Button("Copy HTML Source") { copy(.html) }
-
-                Divider()
-
-                Menu("Export") {
-                    ForEach(ExportFormat.allCases) { format in
-                        Button("\(format.label)…") { export(format) }
-                    }
-                }
 
                 Divider()
 
