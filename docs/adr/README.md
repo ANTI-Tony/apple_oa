@@ -18,3 +18,4 @@ made that a future reader might reasonably question.
 | [0010](0010-canvas-and-inspector.md) | Canvas and inspector instead of form and preview | Accepted |
 | [0011](0011-opt-in-writing-assistance.md) | Opt-in writing assistance, and why the remote provider is for demonstration only | Accepted |
 | [0012](0012-accessibility-beyond-compliance.md) | Accessibility beyond compliance | Accepted |
+| [0013](0013-in-app-help-without-a-help-book.md) | In-app help in a window, not a help book | Accepted |

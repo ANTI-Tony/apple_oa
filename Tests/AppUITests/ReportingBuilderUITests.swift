@@ -185,6 +185,18 @@ final class ReportingBuilderUITests: XCTestCase {
     }
 
     @MainActor
+    func testHelpMenuOpensAGuideThatNamesTheShortcuts() throws {
+        // The Help menu macOS draws for an app with no help book has one dead item.
+        let app = launchApp(overrides: ["demoHelp": "shortcuts"])
+        let window = app.windows["Reporting Builder Help"]
+        XCTAssertTrue(window.waitForExistence(timeout: 10))
+        XCTAssertTrue(window.staticTexts["Keyboard Shortcuts"].waitForExistence(timeout: 5))
+        XCTAssertTrue(window.staticTexts["Copy for Email"].exists)
+        // The audit runs against the application; the help window is key here.
+        try app.performAccessibilityAudit()
+    }
+
+    @MainActor
     func testAccessibilityAudit() throws {
         let app = launchApp()
         XCTAssertTrue(app.textFields["editor.title"].waitForExistence(timeout: 10))

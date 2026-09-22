@@ -103,7 +103,7 @@ struct MetricsPreviewTable: View {
     }
 }
 
-/// Shown when Smart Paste detects tabular data, so the user confirms the
+/// Shown when Paste as Block detects tabular data, so the user confirms the
 /// interpretation before anything is inserted.
 struct PasteReviewSheet: View {
     @Environment(\.dismiss) private var dismiss

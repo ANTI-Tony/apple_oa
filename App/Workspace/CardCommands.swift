@@ -19,10 +19,10 @@ struct CardCommands: Commands {
             Button("New Card") {
                 store.add(template: preferences.defaultTemplate, theme: preferences.defaultTheme, author: preferences.authorName)
             }
-            .keyboardShortcut("n", modifiers: .command)
+            .keyboardShortcut(.newCard)
 
             Button("New Card from Notes…") { workspace.isDraftingFromNotes = true }
-                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .keyboardShortcut(.newCardFromNotes)
                 .disabled(!AppConfiguration.isEnabled(.writingAssistance))
 
             Menu("New from Template") {
@@ -38,7 +38,7 @@ struct CardCommands: Commands {
         // live in the Card menu, where nobody went looking for it.
         CommandGroup(replacing: .importExport) {
             Button("Import Cards…") { importCards() }
-                .keyboardShortcut("o", modifiers: .command)
+                .keyboardShortcut(.importCards)
 
             Menu("Export") {
                 ForEach(ExportFormat.allCases) { format in
@@ -53,24 +53,24 @@ struct CardCommands: Commands {
                 guard let card = store.selectedCard else { return }
                 CardPrinter.print(card, width: workspace.cardWidth.points, includeFooter: preferences.includeFooter)
             }
-            .keyboardShortcut("p", modifiers: .command)
+            .keyboardShortcut(.printCard)
             .disabled(store.selectedCard == nil)
         }
 
         CommandGroup(after: .pasteboard) {
             Button("Paste as Block") { workspace.insertRequest = .paste }
-                .keyboardShortcut("v", modifiers: [.command, .shift])
+                .keyboardShortcut(.pasteAsBlock)
                 .disabled(store.selectedCard == nil)
         }
 
         CommandMenu("Insert") {
             Group {
                 Button("Text") { workspace.insertRequest = .text }
-                    .keyboardShortcut("t", modifiers: [.command, .option])
+                    .keyboardShortcut(.insertText)
                 Button("Metrics") { workspace.insertRequest = .metrics }
-                    .keyboardShortcut("m", modifiers: [.command, .option])
+                    .keyboardShortcut(.insertMetrics)
                 Button("Image…") { workspace.insertRequest = .image }
-                    .keyboardShortcut("g", modifiers: [.command, .option])
+                    .keyboardShortcut(.insertImage)
             }
             .disabled(store.selectedCard == nil)
         }
@@ -78,9 +78,9 @@ struct CardCommands: Commands {
         CommandMenu("Card") {
             Group {
                 Button("Copy for Email") { copy(.rich) }
-                    .keyboardShortcut("c", modifiers: [.command, .shift])
+                    .keyboardShortcut(.copyForEmail)
                 Button("Copy as Image") { copy(.image) }
-                    .keyboardShortcut("c", modifiers: [.command, .option])
+                    .keyboardShortcut(.copyAsImage)
                 Button("Copy as Markdown") { copy(.markdown) }
                 Button("Copy for Slack") { copy(.slack) }
                 Button("Copy as Plain Text") { copy(.plain) }
@@ -89,24 +89,24 @@ struct CardCommands: Commands {
                 Divider()
 
                 Button("Move Block Up") { moveSelectedBlock(by: -1) }
-                    .keyboardShortcut(.upArrow, modifiers: [.command, .option])
+                    .keyboardShortcut(.moveBlockUp)
                     .disabled(workspace.selectedBlockID == nil)
                 Button("Move Block Down") { moveSelectedBlock(by: 1) }
-                    .keyboardShortcut(.downArrow, modifiers: [.command, .option])
+                    .keyboardShortcut(.moveBlockDown)
                     .disabled(workspace.selectedBlockID == nil)
                 Button("Delete Block") { deleteSelectedBlock() }
-                    .keyboardShortcut(.delete, modifiers: [.command, .option])
+                    .keyboardShortcut(.deleteBlock)
                     .disabled(workspace.selectedBlockID == nil)
 
                 Divider()
 
                 Button("Check Accessibility") { workspace.reveal(.accessibility) }
-                    .keyboardShortcut("k", modifiers: [.command, .shift])
+                    .keyboardShortcut(.checkAccessibility)
                 Button(workspace.speech.isSpeaking ? "Stop Speaking" : "Hear This Card") {
                     guard let card = store.selectedCard else { return }
                     workspace.toggleSpeech(for: card, includeFooter: preferences.includeFooter)
                 }
-                .keyboardShortcut("l", modifiers: [.command, .option])
+                .keyboardShortcut(.hearThisCard)
                 Menu("Simulate Colour Vision") {
                     Picker("Simulate Colour Vision", selection: Bindable(workspace).visionSimulation) {
                         ForEach(VisionSimulation.allCases) { simulation in
@@ -124,21 +124,21 @@ struct CardCommands: Commands {
                         store.duplicate(id: id)
                     }
                 }
-                .keyboardShortcut("d", modifiers: .command)
+                .keyboardShortcut(.duplicateCard)
 
                 Button("Delete Card") {
                     if let id = store.selectedCardID {
                         store.delete(id: id)
                     }
                 }
-                .keyboardShortcut(.delete, modifiers: .command)
+                .keyboardShortcut(.deleteCard)
             }
             .disabled(store.selectedCard == nil)
         }
 
         CommandGroup(after: .sidebar) {
             Toggle("Format Inspector", isOn: Bindable(workspace).wantsInspector)
-                .keyboardShortcut("i", modifiers: [.command, .option])
+                .keyboardShortcut(.formatInspector)
         }
     }
 

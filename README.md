@@ -21,13 +21,14 @@ accessibility linter in strict mode.
 
 | Need from the brief | How Reporting Builder answers it |
 |---|---|
-| Ingest raw text, metric data and images | Type or paste text; paste CSV, spreadsheet cells, JSON or `Label: value` lines and get metrics with change arrows; drop or paste images. **Smart Paste** (⇧⌘V) picks the block type for you. On-device Vision can read numbers out of a dashboard screenshot. |
+| Ingest raw text, metric data and images | Type or paste text; paste CSV, spreadsheet cells, JSON or `Label: value` lines and get metrics with change arrows; drop or paste images. **Paste as Block** (⇧⌘V) picks the block type for you. On-device Vision can read numbers out of a dashboard screenshot. |
 | Modular cards | Cards are ordered blocks: text, metrics (grouped tiles or a table, with sparklines) and images. Reorder from the keyboard (⌥⌘↑/↓), the context menu or the inspector. Six templates to start from. |
 | Visually polished | Built like a Pages or Keynote document window: a list, the card itself as the editing canvas, and a Format inspector. The card is typographic: one large title, sentence-case headings, SF Rounded numerals, a single quiet group for metrics. Four themes; PNG export at 1×–3×. |
 | Accessibility-compliant | A built-in **accessibility linter** checks fourteen WCAG-mapped rules as you type, from contrast and alt text to "the red items" and images that are mostly text. **Hear This Card** reads the card the way a screen reader presents it; **Colour Vision** shows it as people with colour-vision deficiencies see it. Cards can be set in **large print**, and export as a **tagged PDF**. The toolbar shows the verdict; the inspector's Accessibility tab (⇧⌘K) lists issues and jumps to the block at fault. Exported HTML is semantic; status is never colour-only; images require alt text. The app itself is built for VoiceOver and the keyboard, and its UI tests include XCTest's accessibility audit. |
 | Instantly copy or export | **Copy for Email** (⇧⌘C) puts rich text with images, HTML and plain text on the clipboard at once. Also copy as image, Markdown, Slack format, plain text or HTML source. **File ▸ Export** writes a **tagged PDF**, PNG, HTML, Markdown, plain text or JSON. Share sheet (Mail, Messages, AirDrop, Notes). Drag the preview straight into another app. |
 | Responsive | The window reflows from list + canvas + inspector, to canvas + inspector, to the canvas alone (minimum 480 pt), and the card on the canvas is fluid. Exported HTML is a responsive page. |
 | Deploy on cloud | GitHub Actions publishes the app to **Releases** and a **card gallery to GitHub Pages**, rendered headless by the `reportcard` command-line tool from the same renderers. The Pages build fails if any template stops passing the accessibility linter. |
+| Usable without the README | A real **Help** menu (⌘?) opens a guide in its own window: every keyboard shortcut the app binds, what the accessibility shield means, and where your cards live. The shortcut list is rendered from the same catalogue the menu bar binds, so it cannot name a key the app does not (ADR 0013). |
 | Surprise and delight | **New Card from Notes** turns rough meeting notes into a structured, linted card with a language model (opt-in, on-device where available; see the note below). Audio Graphs for metric trends, a VoiceOver Blocks rotor and block actions, Undo/Redo, Continuity Camera import, printing, a Shortcuts action, alt-text suggestions, JSON import/export, and `reportcard lint` as an accessibility gate for CI pipelines. |
 
 | Hear This Card | Colour Vision |
@@ -133,9 +134,9 @@ and drop, Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/AR
   draft parser and prompts, templates, and the command-line tool), 47 for
   the app layer (store and undo, persistence, export including tagged PDF,
   pasteboard, ingestion, the assistant with a stubbed network, colour-vision
-  maths, configuration, window layout), and 12 XCUITest end-to-end flows: the
+  maths, configuration, window layout), and 14 XCUITest end-to-end flows: the
   canvas, the inspector, the undescribed-image prompt, Hear This Card (muted),
-  Colour Vision, New Card from Notes with a canned model, and
+  Colour Vision, New Card from Notes with a canned model, the help window, and
   `performAccessibilityAudit()`. Run `make test`; run the UI tests from Xcode
   (⌘U), because macOS asks the person at the keyboard to allow UI automation.
 - **CI**: GitHub Actions runs package tests and a command-line smoke test,

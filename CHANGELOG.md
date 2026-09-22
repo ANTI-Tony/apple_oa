@@ -38,6 +38,13 @@ All notable changes to this project are documented here. The format follows
   VoiceOver block actions and a Blocks rotor; Differentiate Without Colour,
   Increase Contrast and Reduce Transparency honoured; Undo and Redo; Continuity
   Camera import.
+- A Help menu (⌘?) opening a guide in its own window: every bound shortcut,
+  grouped by menu and spelled out for VoiceOver; what each state of the toolbar
+  shield means, with a button that opens the real check; where cards are stored;
+  and the build's version and feature flags. Menus and guide take their key
+  equivalents from one `MenuShortcut` catalogue, so the guide cannot name a
+  shortcut the app does not bind (ADR 0013). The three insert tooltips now show
+  their shortcuts too.
 - UI tests for the undescribed-image prompt, Hear This Card (muted), Colour Vision
   and New Card from Notes with a canned model.
 

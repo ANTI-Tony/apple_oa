@@ -10,6 +10,8 @@ struct MainWindow: View {
     @Environment(UserPreferences.self) private var preferences
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.undoManager) private var undoManager
+    @Environment(\.openWindow) private var openWindow
+    @Environment(HelpState.self) private var help
 
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var layout: WindowLayout = .wide
@@ -35,6 +37,12 @@ struct MainWindow: View {
                 }
         }
         .onAppear { LaunchOverrides.applyWindowSize() }
+        .task {
+            guard let topic = LaunchOverrides.helpTopic else { return }
+            try? await Task.sleep(for: .milliseconds(700))
+            help.topic = HelpTopic(rawValue: topic) ?? .shortcuts
+            openWindow(id: HelpState.windowID)
+        }
         .task {
             guard LaunchOverrides.startsListeningMuted else { return }
             try? await Task.sleep(for: .seconds(3))
@@ -146,13 +154,13 @@ struct MainWindow: View {
         if let card = store.selectedCard {
             ToolbarItemGroup(placement: .principal) {
                 Button { workspace.insertRequest = .text } label: { Label("Text", systemImage: "textformat") }
-                    .help("Add text")
+                    .help("Add text (\(MenuShortcut.insertText.glyphs))")
                     .accessibilityIdentifier("toolbar.addText")
                 Button { workspace.insertRequest = .metrics } label: { Label("Metrics", systemImage: "chart.bar") }
-                    .help("Add metrics")
+                    .help("Add metrics (\(MenuShortcut.insertMetrics.glyphs))")
                     .accessibilityIdentifier("toolbar.addMetrics")
                 Button { workspace.insertRequest = .image } label: { Label("Image", systemImage: "photo") }
-                    .help("Add an image")
+                    .help("Add an image (\(MenuShortcut.insertImage.glyphs))")
                     .accessibilityIdentifier("toolbar.addImage")
             }
 

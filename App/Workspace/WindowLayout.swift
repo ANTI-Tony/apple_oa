@@ -81,6 +81,16 @@ enum LaunchOverrides {
         value(for: "-demoState", in: ProcessInfo.processInfo.arguments)
     }
 
+    /// `-demoHelp shortcuts -uiTesting` opens the help window at launch on a
+    /// page. `YES` opens it on the page the menu item opens.
+    static var helpTopic: String? {
+        value(for: "-demoHelp", in: ProcessInfo.processInfo.arguments)
+    }
+
+    static var opensHelp: Bool {
+        helpTopic != nil
+    }
+
     static var seedsMissingDescription: Bool {
         demoState == "missingDescription" || demoState == "listening"
     }
