@@ -77,6 +77,22 @@ function image(slide, file, x, y, w, h, alt) {
   if (!fs.existsSync(full)) { console.warn("missing asset", file); return; }
   slide.addImage({ path: full, x, y, w, h, sizing: { type: "contain", w, h }, altText: alt, objectName: file });
 }
+function rule(slide, x, y, w, h, color) {
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x, y, w, h, fill: { color: color || C.line }, line: { color: color || C.line, width: 0 },
+  });
+}
+// A UML-ish box: name, what kind of type it is, a hairline, then its stored properties.
+function classBox(slide, x, y, w, h, name, stereo, lines, opts = {}) {
+  const dark = !!opts.dark;
+  card(slide, x, y, w, h, dark ? C.ink : C.white);
+  text(slide, name, x + 0.24, y + 0.13, w - 0.48, 0.3, { fontSize: opts.titleSize || 15, bold: true, color: dark ? C.white : C.ink });
+  text(slide, stereo, x + 0.24, y + 0.43, w - 0.48, 0.24, { fontSize: 10.5, color: dark ? C.darkGrey : C.grey });
+  rule(slide, x + 0.24, y + 0.68, w - 0.48, 0.012, dark ? "48484A" : C.line);
+  if (lines.length) {
+    text(slide, lines.join("\n"), x + 0.24, y + 0.76, w - 0.48, h - 0.86, { fontSize: opts.size || 11, color: dark ? C.white : C.ink });
+  }
+}
 function dot(slide, x, y, color) {
   slide.addShape(pres.shapes.OVAL, { x, y, w: 0.16, h: 0.16, fill: { color }, line: { color, width: 0 } });
 }
@@ -190,9 +206,65 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 6 Architecture
+// ---------------------------------------------------------------- 6 The model
 {
   const s = newSlide(false, NOTES[5].notes);
+  if (s) {
+    kicker(s, "THE MODEL");
+    title(s, "One value type, three kinds of block");
+
+    const cw = 6.25, cx = M, mid = cx + cw / 2;
+    classBox(s, cx, 1.42, cw, 1.8, "SnippetCard", "struct · Identifiable · Hashable · Codable · Sendable", []);
+    text(s, ["id: UUID", "schemaVersion: Int", "title: String", "subtitle: String", "author: String"].join("\n"),
+      cx + 0.24, 2.18, 2.9, 0.95, { fontSize: 11 });
+    text(s, ["status: ReportStatus", "theme: CardTheme", "textSize: CardTextSize", "createdAt: Date", "updatedAt: Date"].join("\n"),
+      cx + 3.25, 2.18, 2.8, 0.95, { fontSize: 11 });
+
+    const sx = cx + cw + 0.5, sw = W - M - sx;
+    classBox(s, sx, 1.42, sw, 1.8, "Supporting types", "every one an enum or a small struct, all Codable", [
+      "ReportStatus · five cases, each with words and a shape",
+      "CardTheme · six colours, contrast-checked by the linter",
+      "CardTextSize · standard, large, extra large",
+      "MetricsLayout · tiles or table",
+      "MetricChange.Direction · ▲ ▼ ▬",
+      "MetricChange.Sentiment · positive, negative, neutral",
+    ], { size: 10.5 });
+
+    rule(s, mid - 0.007, 3.22, 0.014, 0.2, C.line);
+    text(s, "blocks: [Block]", mid + 0.14, 3.2, 2.2, 0.26, { fontSize: 11.5, bold: true, color: C.accent });
+
+    classBox(s, mid - 2.95, 3.40, 5.9, 0.56, "Block", "enum · three cases · the package's renderers switch over it with no default clause", [], { titleSize: 14 });
+
+    const boxW = (W - 2 * M - 2 * 0.4) / 3;
+    const centres = [0, 1, 2].map(function (i) { return M + i * (boxW + 0.4) + boxW / 2 });
+    rule(s, mid - 0.007, 3.96, 0.014, 0.2, C.line);
+    rule(s, centres[0], 4.16, centres[2] - centres[0], 0.014, C.line);
+    centres.forEach(function (c) { rule(s, c - 0.007, 4.16, 0.014, 0.14, C.line) });
+
+    const payloads = [
+      ["TextBlock", "case .text", ["heading: String", "body: String", "", "body parses to [TextFragment]", "in exactly one place"]],
+      ["MetricsBlock", "case .metrics", ["heading: String", "metrics: [Metric]", "layout: MetricsLayout"]],
+      ["ImageBlock", "case .image", ["imageData: Data", "contentType: ImageContentType", "altText: String · caption: String", "isDecorative: Bool", "pixelSize: PixelSize? · fileName: String?", "recognizedWordCount: Int?"]],
+    ];
+    payloads.forEach(function (p, i) {
+      classBox(s, M + i * (boxW + 0.4), 4.26, boxW, 1.82, p[0], "struct · " + p[1], p[2], { size: 10.5 });
+    });
+
+    rule(s, centres[1] - 0.007, 6.08, 0.014, 0.14, C.line);
+    card(s, M + boxW + 0.4, 6.22, W - M - (M + boxW + 0.4), 0.7);
+    const bx = M + boxW + 0.64;
+    text(s, "Metric", bx, 6.36, 1.3, 0.24, { fontSize: 12, bold: true });
+    text(s, "label · value: String · change: MetricChange? · trend: [Double]", bx + 1.35, 6.36, 6.0, 0.24, { fontSize: 11, color: C.grey });
+    text(s, "MetricChange", bx, 6.64, 1.3, 0.24, { fontSize: 12, bold: true });
+    text(s, "direction · sentiment · text, so “down 20%” can be good news", bx + 1.35, 6.64, 6.0, 0.24, { fontSize: 11, color: C.grey });
+
+    text(s, "Every block carries a UUID, and nothing on this slide imports a user interface framework.", M, 6.35, 3.9, 0.6, { fontSize: 11, italic: true, color: C.grey });
+  }
+}
+
+// ---------------------------------------------------------------- 7 Architecture
+{
+  const s = newSlide(false, NOTES[6].notes);
   if (s) {
     kicker(s, "ARCHITECTURE");
     title(s, "One package below, two consumers above");
@@ -230,9 +302,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 7 Principle 3
+// ---------------------------------------------------------------- 8 Principle 3
 {
-  const s = newSlide(false, NOTES[6].notes);
+  const s = newSlide(false, NOTES[7].notes);
   if (s) {
     kicker(s, "PRINCIPLE 3");
     title(s, "Accessibility you can experience, not just pass");
@@ -252,9 +324,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 8 Readers + VoiceOver
+// ---------------------------------------------------------------- 9 Readers + VoiceOver
 {
-  const s = newSlide(false, NOTES[7].notes);
+  const s = newSlide(false, NOTES[8].notes);
   if (s) {
     kicker(s, "ACCESSIBILITY, CONTINUED");
     title(s, "For those who read it, and those who write it");
@@ -282,9 +354,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 9 AI feature
+// ---------------------------------------------------------------- 10 AI feature
 {
-  const s = newSlide(false, NOTES[8].notes);
+  const s = newSlide(false, NOTES[9].notes);
   if (s) {
     kicker(s, "AI ASSISTANCE  ·  OPT-IN");
     title(s, "New Card from Notes: the brief's first sentence");
@@ -302,9 +374,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 10 AI risk
+// ---------------------------------------------------------------- 11 AI risk
 {
-  const s = newSlide(false, NOTES[9].notes);
+  const s = newSlide(false, NOTES[10].notes);
   if (s) {
     kicker(s, "AI ASSISTANCE  ·  DATA RISK");
     title(s, "For this exercise only: not how I would ship it");
@@ -332,9 +404,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 11 Testing
+// ---------------------------------------------------------------- 12 Testing
 {
-  const s = newSlide(false, NOTES[10].notes);
+  const s = newSlide(false, NOTES[11].notes);
   if (s) {
     kicker(s, "TESTING");
     title(s, "Fast where it is cheap, honest where it is not");
@@ -373,9 +445,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 12 Engineering
+// ---------------------------------------------------------------- 13 Engineering
 {
-  const s = newSlide(false, NOTES[11].notes);
+  const s = newSlide(false, NOTES[12].notes);
   if (s) {
     kicker(s, "ENGINEERING");
     title(s, "Built to be read and changed");
@@ -407,9 +479,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 13 Cloud
+// ---------------------------------------------------------------- 14 Cloud
 {
-  const s = newSlide(false, NOTES[12].notes);
+  const s = newSlide(false, NOTES[13].notes);
   if (s) {
     kicker(s, "CLOUD AND DELIVERY");
     title(s, "The cloud carries the software, not your data");
@@ -435,9 +507,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 14 Trade-offs
+// ---------------------------------------------------------------- 15 Trade-offs
 {
-  const s = newSlide(false, NOTES[13].notes);
+  const s = newSlide(false, NOTES[14].notes);
   if (s) {
     kicker(s, "TRADE-OFFS");
     title(s, "What I would not claim yet");
@@ -463,9 +535,9 @@ function dot(slide, x, y, color) {
   }
 }
 
-// ---------------------------------------------------------------- 15 Close
+// ---------------------------------------------------------------- 16 Close
 {
-  const s = newSlide(true, NOTES[14].notes);
+  const s = newSlide(true, NOTES[15].notes);
   if (s) {
     title(s, "Three things to take away", true, { size: 38 });
     const items = [

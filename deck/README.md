@@ -1,6 +1,6 @@
 # Presentation deck
 
-`Reporting-Builder.pptx` is the fifteen-minute talk: 15 slides, with the full
+`Reporting-Builder.pptx` is the fifteen-minute talk: 16 slides, with the full
 script in the speaker notes. It opens in Keynote or PowerPoint.
 
 The deck is generated, so the slides, the speaker notes and

@@ -27,14 +27,19 @@ module.exports = [
     notes: `Three design principles. The first: one model, many renderers. A card is a plain value type with no UI dependencies, and every output is a pure function of it: the canvas you edit, the PNG and the PDF, inline-styled HTML for email, rich text for Mail, Markdown for Slack, plain text, even the spoken narration. That is why what you see is what you paste. It also makes a new destination cheap, and it lets the same code run without a window.`,
   },
   {
+    title: "One value type, three kinds of block",
+    minutes: 0.95,
+    notes: `And here is that model, because everything else is a function of it. A card is a struct: identity, a schema version so an older file still opens, the words you see, a status, a theme, a text size, and an ordered array of blocks. A block is an enum with exactly three cases, and that is the decision that pays for itself: every renderer in the package switches over it with no default clause, so a fourth kind of block would not compile until each of them handled it. Metrics nest one level deeper, and a change carries its direction and its sentiment as separate fields, which is how the card knows that twenty percent fewer open bugs is good news.`,
+  },
+  {
     title: "One package below, two consumers above",
-    minutes: 1.1,
-    notes: `Here is the shape of it, because the shape is the argument. At the bottom is one Swift package, ReportCore, that imports nothing but Foundation: the model, the parsers, every renderer, the accessibility linter and the templates. Two things sit on top, and neither knows the other exists: the Mac app, and a command-line tool. Dependencies point one way, and that single rule buys three things. The package's ninety tests run in under a second, so the renderers and the linter stay cheap to change. The same code runs headless, which is how accessibility became a gate in the pipeline. And it already builds for iOS, so an iPad version is a target rather than a rewrite. Inside the app it is Swift 6 with strict concurrency: a card is a Sendable value type, the stores are main-actor observable objects, and the compiler checks it.`,
+    minutes: 0.75,
+    notes: `And here is how it is packaged. At the bottom one Swift package, ReportCore, importing nothing but Foundation: the model, the parsers, every renderer, the accessibility linter and the templates. Two things sit on top and neither knows the other exists: the Mac app, and a command-line tool. Dependencies point one way, and that single rule buys three things. The package's ninety tests run in under a second. The same code runs headless, which is how accessibility became a gate in the pipeline. And it already builds for iOS, so an iPad version is a target rather than a rewrite.`,
   },
   {
     title: "Accessibility you can experience, not just pass",
-    minutes: 0.95,
-    notes: `The third principle is the one I care most about. Passing a checklist is the floor. Most people who write status reports do not use a screen reader, so they cannot tell what their report is like for someone who does. So the app lets you experience it. Hear This Card reads the card in the order and words a screen reader uses: heading level one, list of three items, velocity forty-two, up five percent, positive. If an image has no description, you hear the gap. Colour Vision shows the card under the common colour-vision deficiencies. And the linter checks fourteen rules as you type, each mapped to a WCAG criterion, including ones about language: it flags “the items marked in red”.`,
+    minutes: 0.85,
+    notes: `The third principle is the one I care most about. Passing a checklist is the floor. Most people who write status reports do not use a screen reader, so they cannot tell what their report is like for someone who does. So the app lets you experience it. Hear This Card reads the card in the order and words a screen reader uses: heading level one, list of three items, velocity forty-two, up five percent, positive. If an image has no description, you hear the gap. Colour Vision shows the card under the common colour-vision deficiencies. And the linter checks fourteen rules as you type, each mapped to a WCAG criterion.`,
   },
   {
     title: "For those who read it, and those who write it",
@@ -48,28 +53,28 @@ module.exports = [
   },
   {
     title: "For this exercise only: not how I would ship it",
-    minutes: 1.4,
-    notes: `Now the part I want to be very clear about. In this demo the model is a public API, DeepSeek. That is for this exercise only. I would not ship it, and I would not use it with real data. Status reports are business data. Sent to a public third-party model they leave the organisation's control: the provider's retention and training terms apply, in the provider's jurisdiction, with no data-processing agreement, no security review and no audit trail. Pasted notes can carry a prompt injection, and a model can state a wrong number confidently. So why is it here? My Mac runs macOS 15, which cannot run Apple's on-device model, and a demo needs a model that answers. But the design assumes the right answer. The provider sits behind a protocol. The first implementation is Apple's Foundation Models, on device, where nothing leaves the Mac. The second is any compatible endpoint, which in a company means an approved internal gateway with authentication, redaction and logging. The feature is off by default, asks consent per host, and one build flag removes it with the network entitlement.`,
+    minutes: 1.3,
+    notes: `Now the part I want to be very clear about. In this demo the model is a public API, DeepSeek. That is for this exercise only. I would not ship it, and I would not use it with real data. Status reports are business data. Sent to a public third-party model they leave the organisation's control: the provider's retention and training terms apply, in the provider's jurisdiction, with no data-processing agreement, no security review and no audit trail. Pasted notes can carry a prompt injection, and a model can state a wrong number confidently. So why is it here? My Mac runs macOS 15, which cannot run Apple's on-device model, and a demo needs a model that answers. But the design assumes the right answer. The provider sits behind a protocol: first Apple's Foundation Models, on device, where nothing leaves the Mac; otherwise any compatible endpoint, which in a company means an approved internal gateway with authentication, redaction and logging. It is off by default and asks consent per host.`,
   },
   {
     title: "Fast where it is cheap, honest where it is not",
-    minutes: 1.05,
-    notes: `On testing, and the split is deliberate. Ninety tests in the package cover everything that is a pure function: parsers, renderers, contrast maths, the fourteen linter rules, and the parser that turns a model's reply into a card. They finish in under a second, so I run them constantly. Forty-seven app tests cover the store and undo, persistence, every export including the tagged PDF, and the assistant against a stubbed HTTP client. Twelve UI tests drive the real app, including XCTest's accessibility audit. Nothing touches your clipboard, your network or your files, with one deliberate exception: the Copy for Email test uses the real pasteboard, because the pasteboard is the thing under test. Three things I do not test, and say so instead: how Mail and Slack really render a paste, the VoiceOver experience, and PDF/UA conformance.`,
+    minutes: 1.0,
+    notes: `On testing, and the split is deliberate. Ninety tests in the package cover everything that is a pure function: parsers, renderers, contrast maths, the fourteen linter rules, and the parser that turns a model's reply into a card. They finish in under a second, so I run them constantly. Forty-seven app tests cover the store and undo, persistence, every export including the tagged PDF, and the assistant against a stubbed HTTP client. Nothing touches your clipboard, your network or your files, with one deliberate exception: the Copy for Email test uses the real pasteboard, because the pasteboard is the thing under test. And three things I do not test, and say so instead: how Mail and Slack really render a paste, the VoiceOver experience, and PDF/UA conformance.`,
   },
   {
     title: "Built to be read and changed",
-    minutes: 0.65,
-    notes: `On the engineering around it. Configuration is not buried in the Xcode project: versions, feature flags and signing live in xcconfig files and reach the running app through one typed accessor. The project file is generated from a YAML spec, so a reviewer can read the build the way they read the code, and one flag removes writing assistance together with its network entitlement. There are no third-party dependencies. And twelve short decision records explain the choices someone might question, including the ones I reversed.`,
+    minutes: 0.6,
+    notes: `On the engineering around it. Configuration is not buried in the Xcode project: versions, feature flags and signing live in xcconfig files and reach the running app through one typed accessor. The project file is generated from a YAML spec, so a reviewer can read the build the way they read the code, and one flag makes writing assistance unreachable. No third-party dependencies. And twelve short decision records explain the choices someone might question, including the ones I reversed.`,
   },
   {
     title: "The cloud carries the software, not your data",
-    minutes: 0.9,
-    notes: `The brief mentions the cloud. A Mac app is distributed rather than hosted, and user data stays local on purpose, so what ships to the cloud is the software and its output. On every push, GitHub Actions runs the tests and lint. A push to main also renders a gallery of every template, with the same HTML renderer the app uses for email, and publishes it, but only if every card passes the linter in strict mode. Accessibility becomes a pipeline gate. A version tag is set up to build a release; I have not cut one yet. In an enterprise the same artifact would be notarised and distributed through Apple Business Manager or MDM.`,
+    minutes: 0.75,
+    notes: `The brief mentions the cloud. A Mac app is distributed rather than hosted, and user data stays local on purpose, so what ships to the cloud is the software and its output. On every push, GitHub Actions runs the tests and lint. A push to main also renders a gallery of every template, with the same HTML renderer the app uses for email, and publishes it, but only if every card passes the linter in strict mode. Accessibility becomes a pipeline gate. In an enterprise the same artifact would be notarised and distributed through Apple Business Manager or MDM.`,
   },
   {
     title: "What I would not claim yet",
     minutes: 0.7,
-    notes: `I want to be straightforward about what I cannot claim. The on-device model path compiles behind availability checks, but I could not run it on macOS 15. The paste matrix separates what I verified by hand, which is Copy for Email into Mail, Notes, Messages and Slack, from what I expect from each app's documentation. The VoiceOver features are tested for their data; the experience needs someone who uses VoiceOver every day. The tagged PDF has a structure tree, but I have not run a PDF/UA validator. Next would be an iPad target on the same core, share links, and localisation.`,
+    notes: `I want to be straightforward about what I cannot claim. The on-device model path compiles behind availability checks, but I could not run it on macOS 15. The paste matrix separates what I verified by hand from what I expect from each app's documentation. The VoiceOver features are tested for their data; the experience needs someone who uses VoiceOver every day. The tagged PDF has a structure tree, but I have not run a PDF/UA validator. Next would be an iPad target on the same core, share links, and localisation.`,
   },
   {
     title: "Three things to take away",
