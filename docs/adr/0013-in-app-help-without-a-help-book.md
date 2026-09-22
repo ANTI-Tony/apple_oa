@@ -8,8 +8,8 @@ macOS draws a Help menu whether or not an app fills it. `App/Info.plist`
 declared no `CFBundleHelpBookName`, so the app shipped a Help menu containing
 one item that resolves to "Help isn't available for Reporting Builder". A
 visibly present, dead menu reads worse than no help at all, and this is a tool
-of the kind IS&T ships to people who did not choose it and will never read a
-README.
+of the kind an internal platform team ships to people who did not choose it and
+will never read a README.
 
 The platform's formal answer is a help book: a `.help` bundle, an `hiutil`
 index, and `CFBundleHelpBookName` in the Info.plist, displayed by Help Viewer.

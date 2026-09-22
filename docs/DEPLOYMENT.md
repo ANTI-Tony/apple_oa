@@ -149,8 +149,8 @@ group claims to visibility, and revocation happens in the directory.
 | Failure and rollback | Roll back the image tag. Stateless, so no data to restore and no migration to reverse | Apple's problem, and equally out of your hands |
 | Reach | Any client | Apple platforms, plus the CloudKit Web Services REST API for a web viewer |
 
-**Recommendation.** The containerised Swift service, because IS&T's world is a
-mixed fleet with existing internal systems, and CloudKit's cost is precisely the
+**Recommendation.** The containerised Swift service, because an internal tool
+lives in a mixed fleet alongside systems that already exist, and CloudKit's cost is precisely the
 authorization layer that an enterprise tool needs most. **What would change my
 mind:** an Apple-only team that wants a share link this week and never needs to
 integrate with a non-Apple system — CloudKit wins that outright, and it wins it
