@@ -143,8 +143,7 @@ and drop, Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/AR
 - **Documentation**: this README, [ARCHITECTURE](docs/ARCHITECTURE.md),
   [ACCESSIBILITY](docs/ACCESSIBILITY.md), [EXPORT_COMPATIBILITY](docs/EXPORT_COMPATIBILITY.md),
   [DEPLOYMENT](docs/DEPLOYMENT.md), [ADRs](docs/adr/), [CONTRIBUTING](CONTRIBUTING.md),
-  [CHANGELOG](CHANGELOG.md). The talk is in [deck/](deck/) with its script in
-  [PRESENTATION](docs/PRESENTATION.md).
+  [CHANGELOG](CHANGELOG.md).
 
 ## Cloud and deployment
 
@@ -194,8 +193,7 @@ Packages/ReportCore/        Platform-neutral domain package, reportcard CLI, tes
 App/                        macOS app: Store, Views, Export, Ingestion, Intents, Config
 Tests/AppTests/             App unit tests (Swift Testing)
 Tests/AppUITests/           XCUITest flows + accessibility audit
-docs/                       Architecture, accessibility, export matrix, deployment, ADRs, the talk
-deck/                       The presentation (.pptx) and the script that generates it
+docs/                       Architecture, accessibility, export matrix, deployment, ADRs
 .github/workflows/          ci.yml (tests, lint), release.yml (app → Releases), pages.yml (gallery → Pages)
 Makefile                    generate / build / run / test / lint / format
 ```

@@ -38,11 +38,6 @@ All notable changes to this project are documented here. The format follows
   VoiceOver block actions and a Blocks rotor; Differentiate Without Colour,
   Increase Contrast and Reduce Transparency honoured; Undo and Redo; Continuity
   Camera import.
-- The presentation: `deck/` holds the generated .pptx and its source, and
-  `docs/PRESENTATION.md` the script, timings, demo checklist and likely questions.
-  Sixteen slides, including a class diagram of the card model, one on the layering
-  of the package and the two things built on it, and one on what is tested at which
-  level and what is not tested at all.
 - UI tests for the undescribed-image prompt, Hear This Card (muted), Colour Vision
   and New Card from Notes with a canned model.
 
