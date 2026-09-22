@@ -6,7 +6,7 @@ Three things are deployed from this repository, all by GitHub Actions:
 |---|---|---|---|
 | The macOS app, zipped with a SHA-256 checksum | GitHub Releases (and as a build artifact on manual runs) | `.github/workflows/release.yml` | tag `v*`, or manual |
 | The card gallery: every template rendered as responsive, accessible HTML, plus Markdown and JSON | GitHub Pages | `.github/workflows/pages.yml` | push to `main` |
-| Test, lint and project-drift checks | pull requests and `main` | `.github/workflows/ci.yml` | every push |
+| Test, lint and project-drift checks | pull requests and `main` | `.github/workflows/ci.yml` | push to `main`, and every pull request |
 
 The gallery is not a mock-up. It is produced by `reportcard site`, a command-line
 front end to the same `ReportCore` renderers and accessibility linter the app

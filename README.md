@@ -12,6 +12,11 @@ other tool your team uses.
 > Proof of concept for the brief "Project Reporting Builder". Five-day scope,
 > documented trade-offs, no backend.
 
+**See it without building it:** the [card gallery](https://anti-tony.github.io/apple_oa/)
+is every built-in template in every theme, rendered by the same HTML renderer the app
+uses for "Copy for Email" and published by CI only when all of them pass the
+accessibility linter in strict mode.
+
 ## What it does
 
 | Need from the brief | How Reporting Builder answers it |
@@ -41,7 +46,8 @@ other tool your team uses.
 ## Quick start
 
 Requirements: macOS 14 Sonoma or later. Xcode 16 or later to build (developed
-on Xcode 26.3 / Swift 6.2). No accounts, no network.
+on Xcode 26.3 / Swift 6.2). No accounts, and no network unless you switch on
+writing assistance.
 
 ```sh
 git clone <this repo>
