@@ -160,10 +160,17 @@ with a custom endpoint and press one of its buttons (ADR 0011). What is deployed
 its output. GitHub Actions renders the template gallery to GitHub Pages with the
 `reportcard` command-line tool, gated on the accessibility linter, and a version
 tag builds the app and publishes it to GitHub Releases (the workflow is in place;
-no release has been cut yet). [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-covers the pipeline, enterprise distribution (notarisation, Apple Business
-Manager, MDM) and the next step, a share-link service (CloudKit, or a small
-Swift service in a container).
+no release has been cut yet). The one piece of that pipeline worth carrying to
+another one is `reportcard lint --strict` standing as a required gate in front
+of the deploy; the vendor names are a commodity choice.
+
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) is the argued version: why GitHub
+Actions rather than Xcode Cloud and what would reverse that, enterprise
+distribution through notarisation and Apple Business Manager or MDM, managed
+configuration of the writing-assistance endpoint by profile, and — if sharing
+ever had to ship — a stateless render-and-lint service in Swift, why it is
+containerised rather than CloudKit, what it would cost to run, and who would
+be woken up by it.
 
 ## Known limitations
 

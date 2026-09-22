@@ -7,6 +7,11 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Changed
+- `docs/DEPLOYMENT.md` answers the brief's cloud clause as a decision rather
+  than a matrix: the alternatives rejected for the part that is actually
+  deployed, managed configuration by MDM profile, and a stateless
+  render-and-lint service with its operator, its cost and its rollback, in
+  place of a table that ended in "any cloud".
 - Redesigned the app on the iWork model: the card is edited in place on a
   canvas, with a Format inspector (Card, Block, Accessibility) instead of a
   form and a preview. Restyled the card and every export typographically

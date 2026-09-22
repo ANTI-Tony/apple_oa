@@ -30,6 +30,16 @@
         }
       }
     },
+    "%@, %@, in the %@ menu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, in the %3$@ menu"
+          }
+        }
+      }
+    },
     "%@, %@, updated %@" : {
       "localizations" : {
         "en" : {
@@ -106,7 +116,10 @@
     "About" : {
 
     },
-    "Add an image" : {
+    "Accessibility Check" : {
+
+    },
+    "Add an image (%@)" : {
 
     },
     "Add Description" : {
@@ -115,10 +128,10 @@
     "Add Metric" : {
 
     },
-    "Add metrics" : {
+    "Add metrics (%@)" : {
 
     },
-    "Add text" : {
+    "Add text (%@)" : {
 
     },
     "Add text, metrics or an image from the toolbar, paste with ⇧⌘V, or drop files here." : {
@@ -161,6 +174,9 @@
 
     },
     "Card from Clipboard" : {
+
+    },
+    "Card Gallery" : {
 
     },
     "Card Image" : {
@@ -510,6 +526,9 @@
     "Open Settings…" : {
 
     },
+    "Open the Accessibility Check" : {
+
+    },
     "Optional" : {
 
     },
@@ -576,6 +595,9 @@
     "Replace…" : {
 
     },
+    "Reporting Builder Help" : {
+
+    },
     "Returns to the editable card" : {
 
     },
@@ -628,6 +650,9 @@
 
     },
     "Size" : {
+
+    },
+    "Source Repository" : {
 
     },
     "Status" : {
@@ -694,6 +719,9 @@
 
     },
     "Where the notes are processed" : {
+
+    },
+    "Where Your Cards Live" : {
 
     },
     "Whether this change is good or bad news. Guessed from the label." : {
