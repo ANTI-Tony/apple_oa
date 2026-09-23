@@ -159,8 +159,10 @@ app sandbox and nothing leaves the Mac unless you turn on writing assistance
 with a custom endpoint and press one of its buttons (ADR 0011). What is deployed is the software and
 its output. GitHub Actions renders the template gallery to GitHub Pages with the
 `reportcard` command-line tool, gated on the accessibility linter, and a version
-tag builds the app and publishes it to GitHub Releases (the workflow is in place;
-no release has been cut yet). The one piece of that pipeline worth carrying to
+tag builds the app and publishes it to GitHub Releases:
+[v0.1.0](https://github.com/ANTI-Tony/apple_oa/releases/tag/v0.1.0) is a zipped
+build with a SHA-256 beside it, ad-hoc signed rather than notarised. The one
+piece of that pipeline worth carrying to
 another one is `reportcard lint --strict` standing as a required gate in front
 of the deploy; the vendor names are a commodity choice.
 
@@ -195,6 +197,9 @@ be woken up by it.
 - English only. A String Catalog is in place and kept in sync by the build,
   so translating is a matter of filling it in; user-facing strings built in
   code (notices, accessibility labels) would need `String(localized:)` first.
+- The published build is ad-hoc signed, so macOS refuses it on first open
+  (right-click → Open). Notarisation needs a Developer ID; the path is in
+  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - The UI tests, including the accessibility audit, run from Xcode only. They were
   written against the accessibility identifiers in the code; run them with ⌘U.
 

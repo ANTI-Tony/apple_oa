@@ -4,7 +4,10 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.0] - 2026-09-23
+
+The first release: a zipped, ad-hoc signed build with a SHA-256, published by
+`release.yml` from the `v0.1.0` tag.
 
 ### Changed
 - `docs/DEPLOYMENT.md` answers the brief's cloud clause as a decision rather
@@ -86,7 +89,9 @@ All notable changes to this project are documented here. The format follows
 - Block shortcuts in the Card menu: Move Block Up (⌥⌘↑), Move Block Down
   (⌥⌘↓), Delete Block (⌥⌘⌫), acting on the block that has keyboard focus.
 
-## [0.1.0] - 2026-09-18
+## Initial build - 2026-09-18
+
+Written when the project was scaffolded. Never tagged; it is here as history.
 
 ### Added
 - `ReportCore` package: `SnippetCard` model with text, metrics and image blocks; four accessible themes.
