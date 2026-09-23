@@ -116,13 +116,13 @@ and drop, Vision assist and Shortcuts. Details in [docs/ARCHITECTURE.md](docs/AR
 
 ```
 ┌──────────────────────────── App (SwiftUI, AppKit) ────────────────────────────┐
-│  Card list  │  Canvas: the card, edited in place  │  Format inspector           │
-│  CardStore (persistence)  ·  WorkspaceState  ·  PasteboardWriter  ·  Exporter  │
+│  Card list  │  Canvas: the card, edited in place  │  Format inspector         │
+│  CardStore (persistence)  ·  WorkspaceState  ·  PasteboardWriter  ·  Exporter │
 └────────────────────────────────────┬──────────────────────────────────────────┘
                                      │ SnippetCard (value type)
 ┌────────────────────────────────────┴──────────────────────────────────────────┐
-│  ReportCore (SwiftPM, macOS + iOS)                                             │
-│  Model · MetricsParser · ContentDetector · AccessibilityLinter · Templates     │
+│  ReportCore (SwiftPM, macOS + iOS)                                            │
+│  Model · MetricsParser · ContentDetector · AccessibilityLinter · Templates    │
 │  HTMLRenderer · MarkdownRenderer · PlainTextRenderer · CardCodec              │
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
